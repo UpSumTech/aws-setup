@@ -1,0 +1,6 @@
+---
+
+- include: iam-roles-for-users.yml
+  with_items: "{{ service_names }}"
+  loop_control:
+    loop_var: service

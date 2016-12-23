@@ -1,0 +1,156 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Cloudformation template for generating developer user iam roles",
+
+  "Parameters": {
+    "UserName": {
+      "Type": "String",
+      "Description": "The name of the user"
+    },
+
+    "FirstPassword": {
+      "Type": "String",
+      "Description": "A first time password"
+    }
+  },
+
+  "Resources": {
+    "User" : {
+      "Type" : "AWS::IAM::User",
+      "Properties" : {
+        "UserName" : { "Ref" : "UserName" },
+
+        "Path" : "/",
+
+        "LoginProfile" : {
+          "Password" : { "Ref" : "FirstPassword" },
+          "PasswordResetRequired" : "True"
+        },
+
+        "Policies" : [
+
+          {
+            "PolicyName" : "minimal-access-to-users",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement": [
+
+                {
+                  "Sid": "manageLoginCredentialsKeysCerts",
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:*LoginProfile",
+                    "iam:GetAccountPasswordPolicy",
+                    "iam:*AccessKey*",
+                    "iam:*SSHPublicKey*",
+                    "iam:*SigningCertificate*",
+                    "iam:ChangePassword"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        ":",
+                        [
+                          "arn:aws:iam:",
+                          { "Ref" : "AWS::AccountId" },
+                          "user/${aws:username}"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+
+                {
+                  "Sid": "allowUserToManageMfaDevices",
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:CreateVirtualMFADevice",
+                    "iam:DeactivateMFADevice",
+                    "iam:EnableMFADevice",
+                    "iam:ResyncMFADevice",
+                    "iam:DeleteVirtualMFADevice"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        ":",
+                        [
+                          "arn:aws:iam:",
+                          { "Ref" : "AWS::AccountId" },
+                          "mfa/${aws:username}"
+                        ]
+                      ]
+                    }
+                  ]
+                },
+
+                {
+                  "Sid": "listUsersAndMFADevices",
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:ListMFADevices",
+                    "iam:ListVirtualMFADevices",
+                    "iam:ListUsers"
+                  ],
+                  "Resource": [
+
+                    {
+                      "Fn::Join": [
+                        ":",
+                        [
+                          "arn:aws:iam:",
+                          { "Ref" : "AWS::AccountId" },
+                          "mfa/*"
+                        ]
+                      ]
+                    },
+
+                    {
+                      "Fn::Join": [
+                        ":",
+                        [
+                          "arn:aws:iam:",
+                          { "Ref" : "AWS::AccountId" },
+                          "user/*"
+                        ]
+                      ]
+                    }
+
+                  ]
+                }
+
+              ]
+            }
+          },
+
+          {
+            "PolicyName" : "restricted-management-actions",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "aws-portal:ViewAccount",
+                    "aws-portal:ViewBilling",
+                    "aws-portal:ViewUsage",
+                    "workmail:Get*",
+                    "workmail:List*",
+                    "workmail:Describe*",
+                    "budgets:ViewBudget"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          }
+
+        ]
+      }
+    }
+
+  }
+}

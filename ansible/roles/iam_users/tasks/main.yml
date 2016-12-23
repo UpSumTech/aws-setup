@@ -1,0 +1,6 @@
+---
+
+- include: iam-users.yml
+  with_items: "{{ usernames }}"
+  loop_control:
+    loop_var: username

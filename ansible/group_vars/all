@@ -1,0 +1,11 @@
+---
+
+service_names:
+  - "analytics"
+  - "application"
+  - "compute"
+  - "database"
+  - "log"
+  - "messaging"
+  - "networking-cdn"
+  - "storage-and-fs"

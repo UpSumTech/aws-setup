@@ -1,0 +1,61 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Cloudformation template for generating user admin group",
+
+  "Parameters": {
+    "GroupName": {
+      "Type": "String",
+      "Description": "The name of the group for iam users"
+    }
+  },
+
+  "Resources": {
+    "UserAdminGroup" : {
+      "Type" : "AWS::IAM::Group",
+
+      "Properties" : {
+        "GroupName" : "user-admin",
+
+        "Path" : "/",
+
+        "Policies" : [
+
+          {
+            "PolicyName" : "access-to-manage-users",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "iam:ListUsers",
+                    "iam:GetUser",
+                    "iam:CreateUser",
+                    "iam:UpdateUser",
+                    "iam:DeleteUser",
+
+                    "iam:ListUserPolicies",
+                    "iam:GetUserPolicy",
+                    "iam:PutUserPolicy",
+                    "iam:AttachUserPolicy",
+                    "iam:ListAttachedUserPolicies",
+                    "iam:DetachUserPolicy",
+                    "iam:DeleteUserPolicy",
+
+                    "iam:ListGroupsForUser",
+                    "iam:RemoveUserFromGroup"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          }
+
+        ]
+      }
+    }
+  }
+}

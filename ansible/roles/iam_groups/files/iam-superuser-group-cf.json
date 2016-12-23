@@ -1,0 +1,217 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Cloudformation template for generating superuser user group",
+
+  "Parameters": {
+    "GroupName": {
+      "Type": "String",
+      "Description": "The name of the group for iam users"
+    }
+  },
+
+  "Resources": {
+    "SuperuserGroup" : {
+      "Type" : "AWS::IAM::Group",
+      "Properties" : {
+        "GroupName" : { "Ref" : "GroupName" },
+
+        "Path" : "/",
+
+        "Policies" : [
+
+          {
+            "PolicyName" : "minimal-access-to-sts",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "sts:AssumeRole",
+                    "sts:GetSessionToken",
+                    "sts:GetFederationToken"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          },
+
+          {
+            "PolicyName" : "minimal-access-to-kms",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "kms:DescribeKey",
+                    "kms:Decrypt",
+                    "kms:Encrypt",
+                    "kms:DescribeKey",
+                    "kms:GetKeyPolicy",
+                    "kms:GetKeyRotationStatus",
+                    "kms:GetParametersForImport",
+                    "kms:ListAliases",
+                    "kms:ListGrants",
+                    "kms:ListKeyPolicies",
+                    "kms:ListKeys",
+                    "kms:ListRetirableGrants",
+                    "kms:ReEncryptFrom",
+                    "kms:ReEncryptTo"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          },
+
+          {
+            "PolicyName" : "minimal-access-to-certs",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "acm:DescribeCertificate",
+                    "acm:GetCertificate",
+                    "acm:ListCertificates",
+                    "acm:ListTagsForCertificate",
+                    "acm:AddTagsToCertificate",
+                    "acm:RemoveTagsFromCertificate"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          },
+
+          {
+            "PolicyName" : "access-to-manage-service-level-roles-and-policies",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "iam:AddRoleToInstanceProfile",
+                    "iam:AttachRolePolicy",
+                    "iam:CreateInstanceProfile",
+                    "iam:CreatePolicy",
+                    "iam:CreatePolicyVersion",
+                    "iam:CreateRole",
+                    "iam:DeletePolicy",
+                    "iam:DeletePolicyVersion",
+                    "iam:DeleteRole",
+                    "iam:DeleteRolePolicy",
+                    "iam:DetachRolePolicy",
+                    "iam:GetContextKeysForCustomPolicy",
+                    "iam:GetContextKeysForPrincipalPolicy",
+                    "iam:GetInstanceProfile",
+                    "iam:GetPolicy",
+                    "iam:GetPolicyVersion",
+                    "iam:GetRole",
+                    "iam:GetRolePolicy",
+                    "iam:ListAttachedRolePolicies",
+                    "iam:ListEntitiesForPolicy",
+                    "iam:ListInstanceProfiles",
+                    "iam:ListInstanceProfilesForRole",
+                    "iam:ListPolicies",
+                    "iam:ListPoliciesGrantingServiceAccess",
+                    "iam:ListPolicyVersions",
+                    "iam:ListRolePolicies",
+                    "iam:ListRoles",
+                    "iam:PassRole",
+                    "iam:PutRolePolicy",
+                    "iam:RemoveRoleFromInstanceProfile",
+                    "iam:SimulateCustomPolicy",
+                    "iam:SimulatePrincipalPolicy",
+                    "iam:UpdateAssumeRolePolicy",
+                    "iam:DeleteServerCertificate",
+                    "iam:GetServerCertificate",
+                    "iam:ListServerCertificates",
+                    "iam:UpdateServerCertificate",
+                    "iam:UploadServerCertificate"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          },
+
+          {
+            "PolicyName" : "cloudformation-actions",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "cloudformation:*"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          },
+
+          {
+            "PolicyName" : "actions-for-monitoring-services",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "discovery:*",
+                    "cloudtrail:*",
+                    "health:*"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          },
+
+          {
+            "PolicyName" : "access-for-dev-tools",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "codecommit:*",
+                    "codedeploy:*",
+                    "codepipeline:*",
+                    "opswork:*",
+                    "opswork-cm:*",
+                    "xray:*"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          }
+
+        ]
+      }
+    }
+  }
+}

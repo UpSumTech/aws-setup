@@ -1,0 +1,20 @@
+---
+
+- name: "iam-{{ service }}-group-stack"
+  cloudformation:
+    stack_name: "iam-{{ service }}-group-stack"
+    region: "{{ region }}"
+    state: "{{ stack_status }}"
+    template: "roles/iam_groups/files/iam-service-group-cf.json"
+    template_parameters:
+      ServiceName: "{{ service }}"
+
+- name: "collect-iam-{{ service }}-group-stack"
+  cloudformation_facts:
+    stack_name: "iam-{{ service }}-group-stack"
+    all_facts: true
+    region: "{{ region }}"
+
+- set_fact:
+    "iam_{{ service | regex_replace('[-.]', '_') }}_group_facts": "{{ cloudformation }}"
+  when: not ansible_check_mode

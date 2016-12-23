@@ -1,0 +1,74 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Managed policies for the resources",
+
+  "Parameters": {
+    "ServiceName": {
+      "Type": "String",
+      "Description": "The type of the aws service for which you are creating this managed policy"
+    }
+  },
+
+  "Resources": {
+
+    "SuperuserManagedPolicies": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "route53:*",
+                "route53domains:*",
+                "cloudfront:*"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+
+        "Groups": [
+          "superuser"
+        ],
+
+        "Roles": [
+          { "Fn::Sub": [ "superuser-${Service}-role", { "Service": { "Ref" : "ServiceName" } } ] }
+        ]
+      }
+    },
+
+    "DeveloperManagedPolicies": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "route53:Get*",
+                "route53:List*",
+                "route53domains:Get*",
+                "route53domains:List*",
+                "cloudfront:*"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+
+        "Groups": [
+          "developer"
+        ],
+
+        "Roles": [
+          { "Fn::Sub": [ "developer-${Service}-role", { "Service": { "Ref" : "ServiceName" } } ] }
+        ]
+      }
+    }
+
+  }
+}

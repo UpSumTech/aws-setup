@@ -1,0 +1,6 @@
+---
+
+- include: iam-managed-policies.yml
+  with_items: "{{ service_names }}"
+  loop_control:
+    loop_var: service

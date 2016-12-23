@@ -1,0 +1,8 @@
+---
+
+groupnames:
+  - "account-admin"
+  - "user-admin"
+  - "group-admin"
+  - "developer"
+  - "superuser"

@@ -1,0 +1,69 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Roles that can be assumed for the resources",
+
+  "Parameters": {
+    "ServiceName": {
+      "Type": "String",
+      "Description": "The type of the aws service for which you are creating this role that users can assume"
+    }
+  },
+
+  "Resources": {
+    "SuperuserRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {"AWS": {"Ref": "AWS::AccountId"}},
+              "Action": [ "sts:AssumeRole" ],
+              "Condition": {"Bool": {"aws:MultiFactorAuthPresent": "true"}}
+            }
+          ]
+        },
+
+        "Path": "/",
+
+        "RoleName": {
+          "Fn::Sub": [
+            "superuser-${Service}-role",
+            { "Service": { "Ref" : "ServiceName" } }
+          ]
+        }
+      }
+    },
+
+    "DeveloperRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {"AWS": {"Ref": "AWS::AccountId"}},
+              "Action": [ "sts:AssumeRole" ],
+              "Condition": {"Bool": {"aws:MultiFactorAuthPresent": "true"}}
+            }
+          ]
+        },
+
+        "Path": "/",
+
+        "RoleName": {
+          "Fn::Sub": [
+            "developer-${Service}-role",
+            { "Service": { "Ref" : "ServiceName" } }
+          ]
+        }
+      }
+    }
+
+  }
+}

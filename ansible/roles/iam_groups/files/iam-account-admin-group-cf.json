@@ -1,0 +1,58 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Cloudformation template for generating account admin group",
+
+  "Parameters": {
+    "GroupName": {
+      "Type": "String",
+      "Description": "The name of the group for iam users"
+    }
+  },
+
+  "Resources": {
+    "AccountAdminGroup" : {
+      "Type" : "AWS::IAM::Group",
+
+      "Properties" : {
+        "GroupName" : "account-admin",
+
+        "Path" : "/",
+
+        "Policies" : [
+
+          {
+            "PolicyName" : "account-level-access-policies",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement" : [
+
+                {
+                  "Effect" : "Allow",
+                  "Action" : [
+                    "iam:CreateAccountAlias",
+                    "iam:DeleteAccountAlias",
+                    "iam:DeleteAccountPasswordPolicy",
+                    "iam:GenerateCredentialReport",
+                    "iam:GenerateServiceLastAccessedDetails",
+                    "iam:GetAccountAuthorizationDetails",
+                    "iam:GetAccountPasswordPolicy",
+                    "iam:GetAccountSummary",
+                    "iam:GetCredentialReport",
+                    "iam:GetServiceLastAccessedDetails",
+                    "iam:ListAccountAliases",
+                    "iam:SetDefaultPolicyVersion",
+                    "iam:UpdateAccountPasswordPolicy"
+                  ],
+                  "Resource" : "*"
+                }
+
+              ]
+            }
+          }
+
+        ]
+      }
+    }
+  }
+}

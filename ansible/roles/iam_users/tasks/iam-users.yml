@@ -1,0 +1,21 @@
+---
+
+- name: "iam-{{ username }}-stack"
+  cloudformation:
+    stack_name: "iam-{{ username | regex_replace('[_.]', '-') }}-stack"
+    region: "{{ region }}"
+    state: "{{ stack_status }}"
+    template: "roles/iam_users/files/iam-users-cf.json"
+    template_parameters:
+      UserName: "{{ username }}"
+      FirstPassword: "{{ first_password }}"
+
+- name: "collect-iam-{{ username }}-stack"
+  cloudformation_facts:
+    stack_name: "iam-{{ username }}-stack"
+    all_facts: true
+    region: "{{ region }}"
+
+- set_fact:
+    "iam_{{ username | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
+  when: not ansible_check_mode

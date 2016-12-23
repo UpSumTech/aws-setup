@@ -1,0 +1,20 @@
+---
+
+- name: "iam-{{ service }}-managed-policies-stack"
+  cloudformation:
+    stack_name: "iam-{{ service }}-managed-policies-stack"
+    region: "{{ region }}"
+    state: "{{ stack_status }}"
+    template: "roles/iam_managed_policies/files/iam-{{ service }}-managed-policies-cf.json"
+    template_parameters:
+      ServiceName: "{{ service }}"
+
+- name: "collect-iam-{{ service }}-managed-policies-stack"
+  cloudformation_facts:
+    stack_name: "iam-{{ service }}-managed-policies-stack"
+    all_facts: true
+    region: "{{ region }}"
+
+- set_fact:
+    "iam_{{ service | regex_replace('[-.]', '_') }}_managed_policies_facts": "{{ cloudformation }}"
+  when: not ansible_check_mode

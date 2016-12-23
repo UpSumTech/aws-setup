@@ -1,0 +1,11 @@
+---
+
+- include: iam-groups.yml
+  with_items: "{{ groupnames }}"
+  loop_control:
+    loop_var: groupname
+
+- include: iam-service-groups.yml
+  with_items: "{{ service_names }}"
+  loop_control:
+    loop_var: service
