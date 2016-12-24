@@ -80,7 +80,11 @@ def _run_playbook(group, extra_vars={}, dry_run=True):
     variable_manager = VariableManager()
     loader = DataLoader()
     options = Options()
-    playbook = os.path.join(os.getcwd(), 'ansible/main.yml')
+
+    if extra_vars['stack_status'] == 'absent':
+        playbook = os.path.join(os.getcwd(), 'ansible/teardown.yml')
+    else:
+        playbook = os.path.join(os.getcwd(), 'ansible/build.yml')
 
     #  Modify the objects to be able to run the playbook
     variable_manager.extra_vars = extra_vars

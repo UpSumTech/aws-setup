@@ -35,15 +35,15 @@ deps: $(DEPS_STATEFILE)
 
 test: deps $(CF_FILES)
 	$(AT)echo $(CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
-	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=$(FIRST_PASSWORD) --dry-run
+	$(AT)./bin/run.py iam --region=us-west-2 --first-password=noop --dry-run
 
-build: test $(TASK_FILES) $(CF_FILES) $(VAR_FILES) ansible/main.yml
+build: test $(TASK_FILES) $(CF_FILES) $(VAR_FILES) ansible/build.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
 	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=$(FIRST_PASSWORD)
 
-teardown: test $(TASK_FILES) $(CF_FILES) $(VAR_FILES) ansible/main.yml
+teardown: test $(TASK_FILES) $(CF_FILES) $(VAR_FILES) ansible/teardown.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
-	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=$(FIRST_PASSWORD) --delete
+	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=noop --delete
 
 clean:
 	$(AT)rm -rf .make

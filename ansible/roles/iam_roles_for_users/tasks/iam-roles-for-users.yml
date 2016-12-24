@@ -14,7 +14,8 @@
     stack_name: "iam-{{ service }}-user-roles-stack"
     all_facts: true
     region: "{{ region }}"
+  when: stack_status == "present"
 
 - set_fact:
     "iam_{{ service | regex_replace('[-.]', '_') }}_user_roles_facts": "{{ cloudformation }}"
-  when: not ansible_check_mode
+  when: not ansible_check_mode and stack_status == "present"
