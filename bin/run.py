@@ -151,7 +151,6 @@ def main(args=None):
         ansible_python_interpreter="/usr/bin/env python",
         stack_status=stack_status,
         ansible_check_mode=dry_run,
-        #  aws_security_token=os.environ['AWS_SECURITY_TOKEN'],
         aws_access_key=os.environ['AWS_ACCESS_KEY_ID'],
         aws_secret_key=os.environ['AWS_SECRET_ACCESS_KEY'])
 
