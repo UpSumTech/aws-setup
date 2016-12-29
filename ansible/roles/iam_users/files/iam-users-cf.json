@@ -11,7 +11,9 @@
 
     "FirstPassword": {
       "Type": "String",
-      "Description": "A first time password"
+      "Description": "A first time password for the console",
+      "NoEcho": "true",
+      "AllowedPattern" : "[a-zA-Z0-9_]{12,20}"
     }
   },
 
@@ -25,7 +27,7 @@
 
         "LoginProfile" : {
           "Password" : { "Ref" : "FirstPassword" },
-          "PasswordResetRequired" : "True"
+          "PasswordResetRequired" : "true"
         },
 
         "Policies" : [
@@ -118,6 +120,44 @@
                     }
 
                   ]
+                },
+
+                {
+                  "Sid": "viewAndListGroups",
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:GetGroupPolicy",
+                    "iam:ListGroupPolicies",
+                    "iam:ListGroups",
+                    "iam:ListGroupsForUser",
+                    "iam:GetGroup"
+                  ],
+                  "Resource": "*"
+                },
+
+                {
+                  "Sid": "viewAndListPolicies",
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:ListPolicies",
+                    "iam:ListPoliciesGrantingServiceAccess",
+                    "iam:ListPolicyVersions",
+                    "iam:GetPolicyVersion",
+                    "iam:GetPolicy"
+                  ],
+                  "Resource": "*"
+                },
+
+                {
+                  "Sid": "viewAndListRoles",
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:ListRolePolicies",
+                    "iam:ListRoles",
+                    "iam:GetRolePolicy",
+                    "iam:GetRole"
+                  ],
+                  "Resource": "*"
                 }
 
               ]

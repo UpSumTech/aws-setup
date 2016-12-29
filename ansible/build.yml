@@ -19,6 +19,11 @@
         - iam_users
         - iam
 
+    - role: iam_roles_for_compute
+      tags:
+        - iam_roles_for_compute
+        - iam
+
     - role: iam_managed_policies
       tags:
         - iam_managed_policies

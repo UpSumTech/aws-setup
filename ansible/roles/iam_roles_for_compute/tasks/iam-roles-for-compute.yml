@@ -1,0 +1,21 @@
+---
+
+- name: "iam-{{ service }}-compute-roles-stack"
+  cloudformation:
+    stack_name: "iam-{{ service }}-compute-roles-stack"
+    region: "{{ region }}"
+    state: "{{ stack_status }}"
+    template: "roles/iam_roles_for_compute/files/iam-roles-for-compute-cf.json"
+    template_parameters:
+      ServiceName: "{{ service }}"
+
+- name: "collect-iam-{{ service }}-compute-roles-stack"
+  cloudformation_facts:
+    stack_name: "iam-{{ service }}-compute-roles-stack"
+    all_facts: true
+    region: "{{ region }}"
+  when: stack_status == "present"
+
+- set_fact:
+    "iam_{{ service | regex_replace('[-.]', '_') }}_compute_roles_facts": "{{ cloudformation }}"
+  when: not ansible_check_mode and stack_status == "present"

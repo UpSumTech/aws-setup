@@ -66,6 +66,53 @@
           { "Fn::Sub": [ "developer-${Service}-role", { "Service": { "Ref" : "ServiceName" } } ] }
         ]
       }
+    },
+
+    "ComputeManagedPolicies": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sns:ListTopics",
+                "sns:ListSubscriptions",
+                "sns:ListSubscriptionsByTopic",
+                "sns:GetTopicAttributes",
+                "sns:GetSubscriptionAttributes",
+                "sns:Publish",
+                "sns:Subscribe",
+                "sns:Unsubscribe",
+                "sns:ConfirmSubscription"
+              ],
+              "Resource": "*"
+            },
+
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sqs:GetQueueAttributes",
+                "sqs:DeleteMessage",
+                "sqs:ListDeadLetterSourceQueues",
+                "sqs:ListQueues",
+                "sqs:PurgeQueue",
+                "sqs:ReceiveMessage",
+                "sqs:SendMessage",
+                "sqs:ChangeMessageVisibility",
+                "sqs:SendMessageBatch"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+
+        "Roles": [
+          { "Fn::Sub": [ "compute-${Service}-role", { "Service": { "Ref" : "ServiceName" } } ] }
+        ]
+      }
     }
+
   }
 }

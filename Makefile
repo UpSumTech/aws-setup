@@ -25,6 +25,8 @@ DEPS_STATEFILE = .make/done_deps
 
 OS := $(call get_os)
 
+FIRST_PASSWORD ?= $(shell echo $$FIRST_PASSWORD)
+
 ##########################################################################################
 ## Public targets
 
@@ -35,15 +37,15 @@ deps: $(DEPS_STATEFILE)
 
 test: deps $(CF_FILES)
 	$(AT)echo $(CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
-	$(AT)./bin/run.py iam --region=us-west-2 --first-password=noop --dry-run
+	$(AT)./bin/run.py iam --region=us-west-2 --first-password=noop --key-name=noop --dry-run
 
 build: test $(TASK_FILES) $(CF_FILES) $(VAR_FILES) ansible/build.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
-	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=$(FIRST_PASSWORD)
+	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=$(FIRST_PASSWORD) --key-name=$(KEY_NAME)
 
 teardown: test $(TASK_FILES) $(CF_FILES) $(VAR_FILES) ansible/teardown.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
-	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=noop --delete
+	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=noop --key-name=noop --delete
 
 clean:
 	$(AT)rm -rf .make

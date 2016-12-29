@@ -125,15 +125,17 @@ __doc__="""Create cloudformation stacks
 Usage:
     create.py iam_groups --region=<region> [--delete] [--dry-run]
     create.py iam_roles_for_users --region=<region> [--delete] [--dry-run]
+    create.py iam_roles_for_compute --region=<region> --key-name=<key_name> [--delete] [--dry-run]
     create.py iam_users --region=<region> --first-password=<first_password> [--delete] [--dry-run]
     create.py iam_managed_policies --region=<region> [--delete] [--dry-run]
-    create.py iam --first-password=<first_password> --region=<region> [--delete] [--dry-run]
+    create.py iam --first-password=<first_password> --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     create.py (-h | --help)
 
 Options:
     -h --help                           This displays the help menu.
     --region=<region>                   The region of the cloudformation stacks.
-    --first-password=<first_password>   The region of the cloudformation stacks.
+    --first-password=<first_password>   The first password with which the users are being created.
+    --key-name=<key_name>               The key name that will allow ssh access to ec2 instances.
     --delete                            This option will delete the stacks.
     --dry-run                           This option will perform a dry run of the stacks.
 """
@@ -161,8 +163,12 @@ def main(args=None):
     if args['iam_users']:
         extra_vars['first_password'] = args['--first-password'] or os.environ['FIRST_PASSWORD']
         _run_playbook('iam_users', extra_vars=extra_vars, dry_run=dry_run)
+    elif args['iam_roles_for_compute']:
+        extra_vars['key_name'] = args['--key-name']
+        _run_playbook('iam_roles_for_compute', extra_vars=extra_vars, dry_run=dry_run)
     elif args['iam']:
         extra_vars['first_password'] = args['--first-password'] or os.environ['FIRST_PASSWORD']
+        extra_vars['key_name'] = args['--key-name']
         _run_playbook('iam', extra_vars=extra_vars, dry_run=dry_run)
     else:
         _run_playbook(sys.argv[1], extra_vars=extra_vars, dry_run=dry_run)

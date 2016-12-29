@@ -1,0 +1,6 @@
+---
+
+- include: iam-roles-for-compute.yml
+  with_items: "{{ service_names_used_by_computes }}"
+  loop_control:
+    loop_var: service

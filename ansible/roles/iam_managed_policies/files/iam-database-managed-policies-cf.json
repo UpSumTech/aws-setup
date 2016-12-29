@@ -70,6 +70,44 @@
           { "Fn::Sub": [ "developer-${Service}-role", { "Service": { "Ref" : "ServiceName" } } ] }
         ]
       }
+    },
+
+    "ComputeManagedPolicies": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "rds:DescribeDBInstances",
+                "rds:DescribeDBEngineVersions"
+              ],
+              "Resource": "*"
+            },
+
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:Batch*",
+                "dynamodb:DescribeTable",
+                "dynamodb:GetItem",
+                "dynamodb:GetRecords",
+                "dynamodb:PutItem",
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:UpdateItem",
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+
+        "Roles": [
+          { "Fn::Sub": [ "compute-${Service}-role", { "Service": { "Ref" : "ServiceName" } } ] }
+        ]
+      }
     }
   }
 }

@@ -9,6 +9,11 @@
         - iam_managed_policies
         - iam
 
+    - role: iam_roles_for_compute
+      tags:
+        - iam_roles_for_compute
+        - iam
+
     - role: iam_users
       tags:
         - iam_users

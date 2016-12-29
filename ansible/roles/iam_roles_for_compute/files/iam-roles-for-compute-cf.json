@@ -1,0 +1,44 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Roles that can be assumed by compute resources",
+
+  "Parameters": {
+    "ServiceName": {
+      "Type": "String",
+      "Description": "The type of the aws service for which you are creating this role that the compute resources can assume"
+    }
+  },
+
+  "Resources": {
+    "SuperuserRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version" : "2012-10-17",
+
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "ec2.amazonaws.com"
+                ]
+              },
+              "Action": [ "sts:AssumeRole" ]
+            }
+          ]
+        },
+
+        "Path": "/",
+
+        "RoleName": {
+          "Fn::Sub": [
+            "compute-${Service}-role",
+            { "Service": { "Ref" : "ServiceName" } }
+          ]
+        }
+      }
+    }
+  }
+}
