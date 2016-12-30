@@ -14,6 +14,11 @@
       "Description": "A first time password for the console",
       "NoEcho": "true",
       "AllowedPattern" : "[a-zA-Z0-9_]{12,20}"
+    },
+
+    "Groups": {
+      "Type": "List<String>",
+      "Description": "The groups the user belongs to"
     }
   },
 
@@ -47,7 +52,9 @@
                     "iam:*AccessKey*",
                     "iam:*SSHPublicKey*",
                     "iam:*SigningCertificate*",
-                    "iam:ChangePassword"
+                    "iam:ChangePassword",
+                    "iam:*ServiceSpecificCredential",
+                    "iam:ListServiceSpecificCredentials"
                   ],
                   "Resource": [
                     {
@@ -88,74 +95,63 @@
                 },
 
                 {
-                  "Sid": "listUsersAndMFADevices",
+                  "Sid": "viewSelfUserPoliciesAndGroups",
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:ListAttachedUserPolicies",
+                    "iam:ListGroupsForUser",
+                    "iam:GetUserPolicy",
+                    "iam:ListUserPolicies"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Join": [
+                        ":",
+                        [
+                          "arn:aws:iam:",
+                          { "Ref" : "AWS::AccountId" },
+                          "user/${aws:username}"
+                        ]
+                      ]
+                    }
+                  ]
+                }
+
+              ]
+            }
+          },
+
+          {
+            "PolicyName" : "view-roles-policies-groups-mfa-users",
+            "PolicyDocument" : {
+              "Version": "2012-10-17",
+              "Statement": [
+
+                {
+                  "Sid": "listMFADevices",
                   "Effect": "Allow",
                   "Action": [
                     "iam:ListMFADevices",
                     "iam:ListVirtualMFADevices",
-                    "iam:ListUsers"
-                  ],
-                  "Resource": [
-
-                    {
-                      "Fn::Join": [
-                        ":",
-                        [
-                          "arn:aws:iam:",
-                          { "Ref" : "AWS::AccountId" },
-                          "mfa/*"
-                        ]
-                      ]
-                    },
-
-                    {
-                      "Fn::Join": [
-                        ":",
-                        [
-                          "arn:aws:iam:",
-                          { "Ref" : "AWS::AccountId" },
-                          "user/*"
-                        ]
-                      ]
-                    }
-
-                  ]
-                },
-
-                {
-                  "Sid": "viewAndListGroups",
-                  "Effect": "Allow",
-                  "Action": [
                     "iam:GetGroupPolicy",
                     "iam:ListGroupPolicies",
                     "iam:ListGroups",
-                    "iam:ListGroupsForUser",
-                    "iam:GetGroup"
-                  ],
-                  "Resource": "*"
-                },
-
-                {
-                  "Sid": "viewAndListPolicies",
-                  "Effect": "Allow",
-                  "Action": [
+                    "iam:ListAttachedGroupPolicies",
+                    "iam:GetGroup",
                     "iam:ListPolicies",
-                    "iam:ListPoliciesGrantingServiceAccess",
                     "iam:ListPolicyVersions",
                     "iam:GetPolicyVersion",
-                    "iam:GetPolicy"
-                  ],
-                  "Resource": "*"
-                },
-
-                {
-                  "Sid": "viewAndListRoles",
-                  "Effect": "Allow",
-                  "Action": [
+                    "iam:GetPolicy",
                     "iam:ListRolePolicies",
                     "iam:ListRoles",
                     "iam:GetRolePolicy",
-                    "iam:GetRole"
+                    "iam:ListAttachedRolePolicies",
+                    "iam:GetRole",
+                    "iam:ListUsers",
+                    "iam:GenerateServiceLastAccessedDetails",
+                    "iam:GetServiceLastAccessedDetails",
+                    "iam:GetServiceLastAccessedDetailsWithEntities",
+                    "iam:ListPoliciesGrantingServiceAccess"
                   ],
                   "Resource": "*"
                 }
@@ -173,6 +169,8 @@
                 {
                   "Effect" : "Allow",
                   "Action" : [
+                    "iam:GetAccountSummary",
+                    "iam:ListAccountAliases",
                     "aws-portal:ViewAccount",
                     "aws-portal:ViewBilling",
                     "aws-portal:ViewUsage",
@@ -188,7 +186,9 @@
             }
           }
 
-        ]
+        ],
+
+        "Groups": { "Ref" : "Groups" }
       }
     }
 

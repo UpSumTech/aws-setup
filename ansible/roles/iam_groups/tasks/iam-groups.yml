@@ -1,17 +1,28 @@
 ---
 
+- set_fact:
+    stack_name: "iam-{{ groupname | regex_replace('[_.]', '-') }}-group-stack"
+
+- name: is_stack_present
+  shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
+  args:
+    executable: /bin/bash
+  register: is_stack_present
+  ignore_errors: yes
+
 - name: "iam-{{ groupname }}-group-stack"
   cloudformation:
-    stack_name: "iam-{{ groupname }}-group-stack"
+    stack_name: "{{ stack_name }}"
     region: "{{ region }}"
     state: "{{ stack_status }}"
     template: "roles/iam_groups/files/iam-{{ groupname }}-group-cf.json"
     template_parameters:
       GroupName: "{{ groupname }}"
+  when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-iam-{{ groupname }}-group-stack"
   cloudformation_facts:
-    stack_name: "iam-{{ groupname }}-group-stack"
+    stack_name: "{{ stack_name }}"
     all_facts: true
     region: "{{ region }}"
   when: stack_status == "present"

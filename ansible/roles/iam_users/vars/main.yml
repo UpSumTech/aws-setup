@@ -1,8 +1,22 @@
 ---
 
 usernames:
-  - superuser
-  - developer
-  - account-admin
-  - group-admin
-  - user-admin
+  - name: superuser
+    groups:
+      - superuser
+
+  - name: developer
+    groups:
+      - developer
+
+  - name: account-admin
+    groups:
+      - account-admin
+
+  - name: group-admin
+    groups:
+      - group-admin
+
+  - name: user-admin
+    groups:
+      - user-admin
