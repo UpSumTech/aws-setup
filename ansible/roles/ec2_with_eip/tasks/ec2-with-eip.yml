@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    stack_name: "iam-{{ compute_type | regex_replace('[_.]', '-') }}-compute-roles-stack"
+    stack_name: "ec2-with-eip-{{ instance_name | regex_replace('[_.]', '-') }}-{{ env }}-stack"
 
 - name: is_stack_present
   shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
@@ -15,9 +15,12 @@
     stack_name: "{{ stack_name }}"
     region: "{{ region }}"
     state: "{{ stack_status }}"
-    template: "roles/iam_roles_for_compute/files/iam-roles-for-compute-cf.json"
+    template: "roles/ec2_with_eip/files/ec2-with-eip-cf.json"
     template_parameters:
-      ServiceName: "{{ compute_type }}"
+      Environment: "{{ env }}"
+      Name: "{{ instance_name }}"
+      KeyName: "{{ key_name }}"
+      InstanceType: "t2.medium"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
@@ -28,5 +31,5 @@
   when: stack_status == "present"
 
 - set_fact:
-    "iam_{{ compute_type | regex_replace('[-.]', '_') }}_compute_roles_facts": "{{ cloudformation }}"
+    "ec2_with_eip_{{ instance_name | regex_replace('[-.]', '_') }}_{{ env }}_facts": "{{ cloudformation }}"
   when: not ansible_check_mode and stack_status == "present"

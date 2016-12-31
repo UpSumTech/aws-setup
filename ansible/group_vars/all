@@ -10,9 +10,5 @@ service_names:
   - networking-cdn
   - storage-and-fs
 
-service_names_used_by_computes:
-  - application
-  - database
-  - log
-  - messaging
-  - storage-and-fs
+compute_types:
+  - workstation

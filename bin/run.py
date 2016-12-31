@@ -82,9 +82,9 @@ def _run_playbook(group, extra_vars={}, dry_run=True):
     options = Options()
 
     if extra_vars['stack_status'] == 'absent':
-        playbook = os.path.join(os.getcwd(), 'ansible/teardown.yml')
+        playbook = os.path.join(os.getcwd(), 'ansible/teardown_iam.yml')
     else:
-        playbook = os.path.join(os.getcwd(), 'ansible/build.yml')
+        playbook = os.path.join(os.getcwd(), 'ansible/build_iam.yml')
 
     #  Modify the objects to be able to run the playbook
     variable_manager.extra_vars = extra_vars
@@ -129,13 +129,16 @@ Usage:
     create.py iam_users --region=<region> --first-password=<first_password> [--delete] [--dry-run]
     create.py iam_managed_policies --region=<region> [--delete] [--dry-run]
     create.py iam --first-password=<first_password> --key-name=<key_name> --region=<region> [--delete] [--dry-run]
+    create.py ec2_with_eip --env=<env> --key-name=<key_name> --region=<region> --instance-name=<instance_name> [--delete] [--dry-run]
     create.py (-h | --help)
 
 Options:
     -h --help                           This displays the help menu.
     --region=<region>                   The region of the cloudformation stacks.
     --first-password=<first_password>   The first password with which the users are being created.
-    --key-name=<key_name>               The key name that will allow ssh access to ec2 instances.
+    --key-name=<key_name>               The key name that will allow ssh access to ec2 instance.
+    --env=<env>                         The environment for the ec2 instance.
+    --instance-name=<instance_name>     The instance name of the ec2 instance.
     --delete                            This option will delete the stacks.
     --dry-run                           This option will perform a dry run of the stacks.
 """
@@ -170,6 +173,11 @@ def main(args=None):
         extra_vars['first_password'] = args['--first-password'] or os.environ['FIRST_PASSWORD']
         extra_vars['key_name'] = args['--key-name']
         _run_playbook('iam', extra_vars=extra_vars, dry_run=dry_run)
+    elif args['ec2_with_eip']:
+        extra_vars['instance_name'] = args['--instance-name']
+        extra_vars['key_name'] = args['--key-name']
+        extra_vars['env'] = args['--env']
+        _run_playbook('ec2_with_eip', extra_vars=extra_vars, dry_run=dry_run)
     else:
         _run_playbook(sys.argv[1], extra_vars=extra_vars, dry_run=dry_run)
 

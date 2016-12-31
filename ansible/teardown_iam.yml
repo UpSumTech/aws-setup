@@ -4,6 +4,11 @@
   gather_facts: yes
   connection: local
   roles:
+    - role: ec2_with_eip
+      tags:
+        - ec2_with_eip
+        - ec2
+
     - role: iam_managed_policies
       tags:
         - iam_managed_policies

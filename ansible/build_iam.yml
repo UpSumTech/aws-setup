@@ -28,3 +28,8 @@
       tags:
         - iam_managed_policies
         - iam
+
+    - role: ec2_with_eip
+      tags:
+        - ec2_with_eip
+        - ec2
