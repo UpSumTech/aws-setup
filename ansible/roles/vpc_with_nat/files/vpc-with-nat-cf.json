@@ -1,0 +1,371 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates VPC with NAT.",
+
+  "Parameters": {},
+
+  "Mappings": {
+    "VpcNetworkCIDRs": {
+      "us-east-1": { "CIDR": "10.20.0.0/16" },
+      "us-east-2": { "CIDR": "10.21.0.0/16" },
+      "us-west-1": { "CIDR": "10.22.0.0/16" },
+      "us-west-2": { "CIDR": "10.23.0.0/16" },
+      "ca-central-1": { "CIDR": "10.24.0.0/16" },
+      "eu-west-1": { "CIDR": "10.25.0.0/16" },
+      "eu-west-2": { "CIDR": "10.26.0.0/16" },
+      "eu-central-1": { "CIDR": "10.27.0.0/16" },
+      "ap-southeast-1": { "CIDR": "10.28.0.0/16" },
+      "ap-southeast-2": { "CIDR": "10.29.0.0/16" },
+      "ap-south-1": { "CIDR": "10.30.0.0/16" }
+    },
+    "VpcSubnetCIDRs": {
+      "us-east-1": {
+        "PublicSubnet": "10.20.10.0/24",
+        "PrivateSubnet1": "10.20.11.0/24",
+        "PrivateSubnet2": "10.20.12.0/24"
+      },
+      "us-east-2": {
+        "PublicSubnet": "10.21.10.0/24",
+        "PrivateSubnet1": "10.21.11.0/24",
+        "PrivateSubnet2": "10.21.12.0/24"
+      },
+      "us-west-1": {
+        "PublicSubnet": "10.22.10.0/24",
+        "PrivateSubnet1": "10.22.11.0/24",
+        "PrivateSubnet2": "10.22.12.0/24"
+      },
+      "us-west-2": {
+        "PublicSubnet": "10.23.10.0/24",
+        "PrivateSubnet1": "10.23.11.0/24",
+        "PrivateSubnet2": "10.23.12.0/24"
+      },
+      "ca-central-1": {
+        "PublicSubnet": "10.24.10.0/24",
+        "PrivateSubnet1": "10.24.11.0/24",
+        "PrivateSubnet2": "10.24.12.0/24"
+      },
+      "eu-west-1": {
+        "PublicSubnet": "10.25.10.0/24",
+        "PrivateSubnet1": "10.25.11.0/24",
+        "PrivateSubnet2": "10.25.12.0/24"
+      },
+      "eu-west-2": {
+        "PublicSubnet": "10.26.10.0/24",
+        "PrivateSubnet1": "10.26.11.0/24",
+        "PrivateSubnet2": "10.26.12.0/24"
+      },
+      "eu-central-1": {
+        "PublicSubnet": "10.27.10.0/24",
+        "PrivateSubnet1": "10.27.11.0/24",
+        "PrivateSubnet2": "10.27.12.0/24"
+      },
+      "ap-southeast-1": {
+        "PublicSubnet": "10.28.10.0/24",
+        "PrivateSubnet1": "10.28.11.0/24",
+        "PrivateSubnet2": "10.28.12.0/24"
+      },
+      "ap-southeast-2": {
+        "PublicSubnet": "10.29.10.0/24",
+        "PrivateSubnet1": "10.29.11.0/24",
+        "PrivateSubnet2": "10.29.12.0/24"
+      },
+      "ap-south-1": {
+        "PublicSubnet": "10.30.10.0/24",
+        "PrivateSubnet1": "10.30.11.0/24",
+        "PrivateSubnet2": "10.30.12.0/24"
+      }
+    }
+  },
+
+  "Resources": {
+    "VPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": { "Fn::FindInMap": [ "VpcNetworkCIDRs", { "Ref": "AWS::Region" }, "CIDR" ] },
+        "EnableDnsSupport": "true",
+        "EnableDnsHostnames": "true",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "vpc", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "PublicSubnet": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "CidrBlock": { "Fn::FindInMap": [ "VpcSubnetCIDRs", { "Ref": "AWS::Region" }, "PublicSubnet" ] },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "public-subnet", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "PrivateSubnet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "CidrBlock": { "Fn::FindInMap": [ "VpcSubnetCIDRs", { "Ref": "AWS::Region" }, "PrivateSubnet1" ] },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "private-subnet1", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "PrivateSubnet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "CidrBlock": { "Fn::FindInMap": [ "VpcSubnetCIDRs", { "Ref": "AWS::Region" }, "PrivateSubnet2" ] },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "private-subnet2", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "InternetGateway": {
+      "Type": "AWS::EC2::InternetGateway"
+    },
+
+    "InternetGatewayAssociation": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" },
+        "InternetGatewayId": { "Ref": "InternetGateway" }
+      }
+    },
+
+    "NatIPAddress": {
+      "Type": "AWS::EC2::EIP",
+      "DependsOn": "InternetGatewayAssociation",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+
+    "NAT": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": { "Fn::GetAtt": [ "NatIPAddress", "AllocationId" ] },
+        "SubnetId": { "Ref": "PublicSubnet" }
+      }
+    },
+
+    "InternetGatewayRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" }
+      }
+    },
+
+    "InternetGatewayRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": { "Ref": "InternetGatewayRouteTable" },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": { "Ref": "InternetGateway" }
+      }
+    },
+
+    "PublicSubnetRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "PublicSubnet" },
+        "RouteTableId": { "Ref": "InternetGatewayRouteTable" }
+      }
+    },
+
+    "NATRouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": { "Ref": "VPC" }
+      }
+    },
+
+    "NATRoute": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "RouteTableId": { "Ref": "NATRouteTable" },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": { "Ref": "NAT" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation1": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "PrivateSubnet1" },
+        "RouteTableId": { "Ref": "NATRouteTable" }
+      }
+    },
+
+    "PrivateSubnetRouteTableAssociation2": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": { "Ref": "PrivateSubnet2" },
+        "RouteTableId": { "Ref": "NATRouteTable" }
+      }
+    },
+
+    "SecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Limits incoming traffic but allows all outgoing traffic",
+        "VpcId": { "Ref": "VPC" },
+        "SecurityGroupIngress": [
+          { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "CidrIp": "0.0.0.0/0"},
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
+          { "IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "CidrIp": "0.0.0.0/0"},
+        ],
+        "SecurityGroupEgress": [
+          { "IpProtocol": "-1", "CidrIp": "0.0.0.0/0" }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "instance-security-group", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "InternalSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId": {"Ref": "VPC"},
+        "GroupDescription": "Allow internal chatter of all kind",
+        "SecurityGroupIngress": [{
+          "IpProtocol": "-1",
+          "FromPort": "-1",
+          "ToPort": "-1",
+          "SourceSecurityGroupId": { "Ref": "SecurityGroup" }
+        }],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "internal-instance-security-group", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    }
+
+  },
+
+  "Outputs": {
+    "InstancePublicSubnetId": {
+      "Description": "The id of the public subnet",
+      "Value": { "Ref": "PublicSubnet" },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstancePublicSubnetId",
+            ]
+          ]
+        }
+      }
+    },
+    "InstancePrivateSubnetId1": {
+      "Description": "The id of the private subnet 1",
+      "Value": { "Ref": "PrivateSubnet1" },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstancePrivateSubnetId1",
+            ]
+          ]
+        }
+      }
+    },
+    "InstancePrivateSubnetId2": {
+      "Description": "The id of the private subnet 2",
+      "Value": { "Ref": "PrivateSubnet2" },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstancePrivateSubnetId2",
+            ]
+          ]
+        }
+      }
+    },
+    "VpcId": {
+      "Description": "The vpc with nat id",
+      "Value": {"Ref": "VPC"},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "VpcId",
+            ]
+          ]
+        }
+      }
+    },
+    "InstanceSecurityGroupId": {
+      "Description": "The instance vpc security group id",
+      "Value": {"Fn::GetAtt": ["SecurityGroup", "GroupId"]},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstanceSecurityGroupId",
+            ]
+          ]
+        }
+      }
+    },
+    "InstanceInternalSecurityGroupId": {
+      "Description": "The instance internal vpc security group id",
+      "Value": {"Fn::GetAtt": ["InternalSecurityGroup", "GroupId"]},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstanceInternalSecurityGroupId",
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

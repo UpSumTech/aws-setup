@@ -1,0 +1,6 @@
+---
+
+- include: ec2-with-vpc-no-nat.yml
+  with_items: "{{ instances }}"
+  loop_control:
+    loop_var: instance

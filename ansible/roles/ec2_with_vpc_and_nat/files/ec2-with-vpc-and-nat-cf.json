@@ -1,0 +1,242 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates EC2 instance inside a VPC with nat",
+
+  "Parameters": {
+    "Name": {
+      "Description": "The name of the service this instance is going to provide",
+      "Type": "String"
+    },
+
+    "KeyName": {
+      "Description": "EC2 KeyPair to enable SSH access",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "This must be an existing EC2 KeyPair"
+    },
+
+    "InstanceType": {
+      "Description": "EC2 instance type",
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": [
+        "t2.micro",
+        "t2.small",
+        "t2.medium",
+        "m3.medium"
+      ]
+      ,
+      "ConstraintDescription": "This must be a valid EC2 instance type"
+    },
+
+    "VpcStackName": {
+      "Description": "The VPC stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing VPC stack name"
+    },
+
+    "SubnetType": {
+      "Description": "The type of the subnet for the instance",
+      "Type": "String",
+      "ConstraintDescription": "This must be either public|private1|private2"
+    }
+  },
+
+  "Mappings": {
+    "AWSInstanceType2Arch": {
+      "t2.micro"    : { "Arch": "HVM64"  },
+      "t2.small"    : { "Arch": "HVM64"  },
+      "t2.medium"   : { "Arch": "HVM64"  },
+      "m3.medium"   : { "Arch": "HVM64"  }
+    },
+
+    "AWSRegionArch2AMI": {
+      "us-east-1"        : { "HVM64": "ami-4de4f15a" },
+      "us-east-2"        : { "HVM64": "ami-39cd975c" },
+      "us-west-1"        : { "HVM64": "ami-573e6f37" },
+      "us-west-2"        : { "HVM64": "ami-3d2b9f5d" },
+      "ca-central-1"     : { "HVM64": "ami-b02a98d4" },
+      "eu-west-1"        : { "HVM64": "ami-6f1b3b1c" },
+      "eu-west-2"        : { "HVM64": "ami-05e2e861" },
+      "eu-central-1"     : { "HVM64": "ami-ef18d880" },
+      "ap-southeast-1"   : { "HVM64": "ami-73d57b10" },
+      "ap-southeast-2"   : { "HVM64": "ami-eccdf68f" },
+      "ap-south-1"       : { "HVM64": "ami-3cc7b053" }
+    },
+
+    "SubnetTypeMap": {
+      "public": {
+        "SGImportName": "InstanceSecurityGroupId",
+        "SubnetImportName": "InstancePublicSubnetId"
+      },
+      "private1": {
+        "SGImportName": "InstanceInternalSecurityGroupId",
+        "SubnetImportName": "InstancePrivateSubnetId1"
+      },
+      "private2": {
+        "SGImportName": "InstanceInternalSecurityGroupId",
+        "SubnetImportName": "InstancePrivateSubnetId2"
+      }
+    }
+  },
+
+  "Resources": {
+    "EC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "IPAddress=",
+                {"Ref": "IPAddress"}
+              ]
+            ]
+          }
+        },
+        "InstanceType": { "Ref": "InstanceType" },
+        "KeyName": { "Ref": "KeyName" },
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            { "Ref": "AWS::Region" },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                { "Ref": "InstanceType" },
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "NetworkInterfaces" : [{
+          "GroupSet": [
+            {
+              "Fn::ImportValue": {
+                "Fn::Sub": [
+                  "${StackName}-${GroupIdImportName}",
+                  {
+                    "StackName": {"Ref": "VpcStackName"},
+                    "GroupIdImportName": {"Fn::FindInMap": ["SubnetTypeMap", {"Ref": "SubnetType"}, "SGImportName"]}
+                  }
+                ]
+              }
+            }
+          ],
+          "AssociatePublicIpAddress": "true",
+          "DeviceIndex": "0",
+          "DeleteOnTermination": "true",
+          "SubnetId": {
+            "Fn::ImportValue": {
+              "Fn::Sub": [
+                "${StackName}-${SubnetIdImportName}",
+                {
+                  "StackName": {"Ref": "VpcStackName"},
+                  "SubnetIdImportName": {"Fn::FindInMap": ["SubnetTypeMap", {"Ref": "SubnetType"}, "SubnetImportName"]}
+                }
+              ]
+            }
+          }
+        }],
+        "IamInstanceProfile": { "Ref": "EC2InstanceProfile" },
+        "Monitoring": "false",
+        "InstanceInitiatedShutdownBehavior": "stop",
+        "Tags": [
+          {
+            "Key": "name",
+            "Value": { "Ref": "Name" }
+          }
+        ]
+      }
+    },
+
+    "IPAddress": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+
+    "IPAssoc": {
+      "Type": "AWS::EC2::EIPAssociation",
+      "Properties": {
+        "InstanceId": { "Ref": "EC2Instance" },
+        "EIP": { "Ref": "IPAddress" }
+      }
+    },
+
+    "EC2InstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [
+          "compute-role"
+        ]
+      }
+    }
+  },
+
+  "Outputs": {
+    "InstanceId": {
+      "Description": "InstanceId of the newly created EC2 instance",
+      "Value": { "Ref": "EC2Instance" },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstanceId",
+            ]
+          ]
+        }
+      }
+    },
+    "AZ": {
+      "Description": "Availability Zone of the newly created EC2 instance",
+      "Value": { "Fn::GetAtt": [ "EC2Instance", "AvailabilityZone" ] },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstanceAZ",
+            ]
+          ]
+        }
+      }
+    },
+    "PublicDNS": {
+      "Description": "Public DNSName of the newly created EC2 instance",
+      "Value": { "Fn::GetAtt": [ "EC2Instance", "PublicDnsName" ] },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstanceDNS",
+            ]
+          ]
+        }
+      }
+    },
+    "PublicIP": {
+      "Description": "Public IP address of the newly created EC2 instance",
+      "Value": { "Fn::GetAtt": [ "EC2Instance", "PublicIp" ] },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstancePublicIP",
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

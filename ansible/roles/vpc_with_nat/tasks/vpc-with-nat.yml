@@ -1,0 +1,30 @@
+---
+
+- set_fact:
+    stack_name: "vpc-with-nat-{{ region }}-stack"
+
+- name: is_stack_present
+  shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
+  args:
+    executable: /bin/bash
+  register: is_stack_present
+  ignore_errors: yes
+
+- name: "{{ stack_name }}"
+  cloudformation:
+    stack_name: "{{ stack_name }}"
+    region: "{{ region }}"
+    state: "{{ stack_status }}"
+    template: "roles/vpc_with_nat/files/vpc-with-nat-cf.json"
+  when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
+
+- name: "collect-{{ stack_name }}"
+  cloudformation_facts:
+    stack_name: "{{ stack_name }}"
+    all_facts: true
+    region: "{{ region }}"
+  when: stack_status == "present"
+
+- set_fact:
+    "vpc_with_nat_{{ region | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
+  when: not ansible_check_mode and stack_status == "present"

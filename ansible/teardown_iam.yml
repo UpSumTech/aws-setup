@@ -4,32 +4,38 @@
   gather_facts: yes
   connection: local
   roles:
-    - role: ec2_with_eip
+    - role: ec2_with_vpc_and_nat
       tags:
-        - ec2_with_eip
         - ec2
+
+    - role: ec2_with_vpc_no_nat
+      tags:
+        - ec2
+
+    - role: vpc_without_nat
+      tags:
+        - vpc
+
+    - role: vpc_with_nat
+      tags:
+        - vpc
 
     - role: iam_managed_policies
       tags:
-        - iam_managed_policies
         - iam
 
     - role: iam_roles_for_compute
       tags:
-        - iam_roles_for_compute
         - iam
 
     - role: iam_users
       tags:
-        - iam_users
         - iam
 
     - role: iam_roles_for_users
       tags:
-        - iam_roles_for_groups
         - iam
 
     - role: iam_groups
       tags:
-        - iam_groups
         - iam

@@ -123,13 +123,9 @@ def _run_playbook(group, extra_vars={}, dry_run=True):
 __doc__="""Create cloudformation stacks
 
 Usage:
-    create.py iam_groups --region=<region> [--delete] [--dry-run]
-    create.py iam_roles_for_users --region=<region> [--delete] [--dry-run]
-    create.py iam_roles_for_compute --region=<region> --key-name=<key_name> [--delete] [--dry-run]
-    create.py iam_users --region=<region> --first-password=<first_password> [--delete] [--dry-run]
-    create.py iam_managed_policies --region=<region> [--delete] [--dry-run]
     create.py iam --first-password=<first_password> --key-name=<key_name> --region=<region> [--delete] [--dry-run]
-    create.py ec2_with_eip --env=<env> --key-name=<key_name> --region=<region> --instance-name=<instance_name> [--delete] [--dry-run]
+    create.py vpc --region=<region> [--delete] [--dry-run]
+    create.py ec2 --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     create.py (-h | --help)
 
 Options:
@@ -137,8 +133,6 @@ Options:
     --region=<region>                   The region of the cloudformation stacks.
     --first-password=<first_password>   The first password with which the users are being created.
     --key-name=<key_name>               The key name that will allow ssh access to ec2 instance.
-    --env=<env>                         The environment for the ec2 instance.
-    --instance-name=<instance_name>     The instance name of the ec2 instance.
     --delete                            This option will delete the stacks.
     --dry-run                           This option will perform a dry run of the stacks.
 """
@@ -163,21 +157,13 @@ def main(args=None):
         aws_access_key=os.environ['AWS_ACCESS_KEY_ID'],
         aws_secret_key=os.environ['AWS_SECRET_ACCESS_KEY'])
 
-    if args['iam_users']:
-        extra_vars['first_password'] = args['--first-password'] or os.environ['FIRST_PASSWORD']
-        _run_playbook('iam_users', extra_vars=extra_vars, dry_run=dry_run)
-    elif args['iam_roles_for_compute']:
-        extra_vars['key_name'] = args['--key-name']
-        _run_playbook('iam_roles_for_compute', extra_vars=extra_vars, dry_run=dry_run)
-    elif args['iam']:
+    if args['iam']:
         extra_vars['first_password'] = args['--first-password'] or os.environ['FIRST_PASSWORD']
         extra_vars['key_name'] = args['--key-name']
         _run_playbook('iam', extra_vars=extra_vars, dry_run=dry_run)
-    elif args['ec2_with_eip']:
-        extra_vars['instance_name'] = args['--instance-name']
+    elif args['ec2']:
         extra_vars['key_name'] = args['--key-name']
-        extra_vars['env'] = args['--env']
-        _run_playbook('ec2_with_eip', extra_vars=extra_vars, dry_run=dry_run)
+        _run_playbook('ec2', extra_vars=extra_vars, dry_run=dry_run)
     else:
         _run_playbook(sys.argv[1], extra_vars=extra_vars, dry_run=dry_run)
 

@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    stack_name: "ec2-with-eip-{{ instance_name | regex_replace('[_.]', '-') }}-{{ env }}-stack"
+    stack_name: "vpc-without-nat-{{ region }}-stack"
 
 - name: is_stack_present
   shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
@@ -15,12 +15,7 @@
     stack_name: "{{ stack_name }}"
     region: "{{ region }}"
     state: "{{ stack_status }}"
-    template: "roles/ec2_with_eip/files/ec2-with-eip-cf.json"
-    template_parameters:
-      Environment: "{{ env }}"
-      Name: "{{ instance_name }}"
-      KeyName: "{{ key_name }}"
-      InstanceType: "t2.medium"
+    template: "roles/vpc_without_nat/files/vpc-without-nat-cf.json"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
@@ -31,5 +26,5 @@
   when: stack_status == "present"
 
 - set_fact:
-    "ec2_with_eip_{{ instance_name | regex_replace('[-.]', '_') }}_{{ env }}_facts": "{{ cloudformation }}"
+    "vpc_without_nat_{{ region | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
   when: not ansible_check_mode and stack_status == "present"

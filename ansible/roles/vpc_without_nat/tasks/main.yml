@@ -1,0 +1,3 @@
+---
+
+- include: vpc-without-nat.yml

@@ -6,30 +6,36 @@
   roles:
     - role: iam_groups
       tags:
-        - iam_groups
         - iam
 
     - role: iam_roles_for_users
       tags:
-        - iam_roles_for_groups
         - iam
 
     - role: iam_users
       tags:
-        - iam_users
         - iam
 
     - role: iam_roles_for_compute
       tags:
-        - iam_roles_for_compute
         - iam
 
     - role: iam_managed_policies
       tags:
-        - iam_managed_policies
         - iam
 
-    - role: ec2_with_eip
+    - role: vpc_with_nat
       tags:
-        - ec2_with_eip
+        - vpc
+
+    - role: vpc_without_nat
+      tags:
+        - vpc
+
+    - role: ec2_with_vpc_and_nat
+      tags:
+        - ec2
+
+    - role: ec2_with_vpc_no_nat
+      tags:
         - ec2
