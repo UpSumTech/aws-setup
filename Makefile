@@ -130,8 +130,8 @@ help :
 	echo make build_sg AWS_REGION=us-west-1
 	echo make teardown_sg AWS_REGION=us-west-1
 	echo make test_ec2
-	echo make build_ec2 AWS_REGION=us-west-1 KEY_NAME=root-key
-	echo make teardown_ec2 AWS_REGION=us-west-1 KEY_NAME=root-key
+	echo make build_ec2 AWS_REGION=us-west-1 KEY_NAME=bastion-key
+	echo make teardown_ec2 AWS_REGION=us-west-1 KEY_NAME=bastion-key
 	echo make clean
 	echo make help
 
