@@ -21,6 +21,7 @@
       KeyName: "{{ key_name }}"
       InstanceType: "t2.medium"
       VpcStackName: "vpc-with-nat-{{ region }}-stack"
+      SecurityGroupStackName: "security-groups-{{ region }}-stack"
       SubnetType: "{{ instance.subnet }}"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 

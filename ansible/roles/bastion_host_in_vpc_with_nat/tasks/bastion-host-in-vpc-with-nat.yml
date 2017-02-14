@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    stack_name: "vpc-without-nat-{{ region }}-stack"
+    stack_name: "{{ instance.name | regex_replace('[_.]', '-') }}-{{ region }}-stack"
 
 - name: is_stack_present
   shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
@@ -15,7 +15,14 @@
     stack_name: "{{ stack_name }}"
     region: "{{ region }}"
     state: "{{ stack_status }}"
-    template: "roles/vpc_without_nat/files/vpc-without-nat-cf.json"
+    template: "roles/bastion_host_in_vpc_with_nat/files/bastion-host-in-vpc-with-nat-cf.json"
+    template_parameters:
+      Name: "{{ instance.name }}"
+      KeyName: "{{ key_name }}"
+      InstanceType: "t2.medium"
+      VpcStackName: "vpc-with-nat-{{ region }}-stack"
+      SecurityGroupStackName: "security-groups-{{ region }}-stack"
+      SubnetType: "{{ instance.subnet }}"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
@@ -26,5 +33,5 @@
   when: stack_status == "present"
 
 - set_fact:
-    "vpc_without_nat_{{ region | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
+    "{{ instance.name | regex_replace('[-.]', '_') }}_{{ region | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
   when: not ansible_check_mode and stack_status == "present"

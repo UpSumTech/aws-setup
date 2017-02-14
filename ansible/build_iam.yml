@@ -28,14 +28,14 @@
       tags:
         - vpc
 
-    - role: vpc_without_nat
+    - role: security_groups
       tags:
-        - vpc
+        - sg
 
-    - role: ec2_with_vpc_and_nat
+    - role: bastion_host_in_vpc_with_nat
       tags:
         - ec2
 
-    - role: ec2_with_vpc_no_nat
+    - role: ec2_with_vpc_and_nat
       tags:
         - ec2

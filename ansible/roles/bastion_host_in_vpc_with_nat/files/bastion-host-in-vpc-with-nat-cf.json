@@ -1,11 +1,11 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Creates EC2 instance inside a VPC with no nat",
+  "Description": "Creates EC2 instance for bastion inside a VPC with nat",
 
   "Parameters": {
     "Name": {
-      "Description": "The name of the service this instance is going to provide",
+      "Description": "The name of the instance",
       "Type": "String"
     },
 
@@ -35,10 +35,16 @@
       "ConstraintDescription": "This must be an existing VPC stack name"
     },
 
+    "SecurityGroupStackName": {
+      "Description": "The security group stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing stack name for a security group"
+    },
+
     "SubnetType": {
       "Description": "The type of the subnet for the instance",
       "Type": "String",
-      "ConstraintDescription": "This must be either public|private1|private2"
+      "ConstraintDescription": "This must be either public1|public2"
     }
   },
 
@@ -65,17 +71,13 @@
     },
 
     "SubnetTypeMap": {
-      "public": {
-        "SGImportName": "InstanceSecurityGroupId",
-        "SubnetImportName": "InstancePublicSubnetId"
+      "public1": {
+        "SGImportName": "BastionSecurityGroupId",
+        "SubnetImportName": "InstancePublicSubnetId1"
       },
-      "private1": {
-        "SGImportName": "InstanceInternalSecurityGroupId",
-        "SubnetImportName": "InstancePrivateSubnetId1"
-      },
-      "private2": {
-        "SGImportName": "InstanceInternalSecurityGroupId",
-        "SubnetImportName": "InstancePrivateSubnetId2"
+      "public2": {
+        "SGImportName": "BastionSecurityGroupId",
+        "SubnetImportName": "InstancePublicSubnetId2"
       }
     }
   },
@@ -117,7 +119,7 @@
                 "Fn::Sub": [
                   "${StackName}-${GroupIdImportName}",
                   {
-                    "StackName": {"Ref": "VpcStackName"},
+                    "StackName": {"Ref": "SecurityGroupStackName"},
                     "GroupIdImportName": {"Fn::FindInMap": ["SubnetTypeMap", {"Ref": "SubnetType"}, "SGImportName"]}
                   }
                 ]
@@ -145,7 +147,15 @@
         "Tags": [
           {
             "Key": "name",
-            "Value": { "Ref": "Name" }
+            "Value": {
+              "Fn::Join" : [
+                "-",
+                [
+                  { "Ref": "Name" },
+                  { "Ref" : "AWS::StackId" }
+                ]
+              ]
+            }
           }
         ]
       }
@@ -193,6 +203,7 @@
         }
       }
     },
+
     "AZ": {
       "Description": "Availability Zone of the newly created EC2 instance",
       "Value": { "Fn::GetAtt": [ "EC2Instance", "AvailabilityZone" ] },
@@ -208,21 +219,7 @@
         }
       }
     },
-    "PublicDNS": {
-      "Description": "Public DNSName of the newly created EC2 instance",
-      "Value": { "Fn::GetAtt": [ "EC2Instance", "PublicDnsName" ] },
-      "Export": {
-        "Name": {
-          "Fn::Join" : [
-            "-",
-            [
-              { "Ref" : "AWS::StackName" },
-              "InstanceDNS",
-            ]
-          ]
-        }
-      }
-    },
+
     "PublicIP": {
       "Description": "Public IP address of the newly created EC2 instance",
       "Value": { "Fn::GetAtt": [ "EC2Instance", "PublicIp" ] },

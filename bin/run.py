@@ -125,6 +125,7 @@ __doc__="""Create cloudformation stacks
 Usage:
     create.py iam --first-password=<first_password> --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     create.py vpc --region=<region> [--delete] [--dry-run]
+    create.py sg --region=<region> [--delete] [--dry-run]
     create.py ec2 --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     create.py (-h | --help)
 

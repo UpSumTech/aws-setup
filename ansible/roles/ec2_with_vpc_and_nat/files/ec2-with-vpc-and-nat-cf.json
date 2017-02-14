@@ -35,10 +35,16 @@
       "ConstraintDescription": "This must be an existing VPC stack name"
     },
 
+    "SecurityGroupStackName": {
+      "Description": "The security group stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing stack name for security groups"
+    },
+
     "SubnetType": {
       "Description": "The type of the subnet for the instance",
       "Type": "String",
-      "ConstraintDescription": "This must be either public|private1|private2"
+      "ConstraintDescription": "This must be either public1|private1|public2|private2"
     }
   },
 
@@ -65,18 +71,31 @@
     },
 
     "SubnetTypeMap": {
-      "public": {
-        "SGImportName": "InstanceSecurityGroupId",
-        "SubnetImportName": "InstancePublicSubnetId"
+      "public1": {
+        "SGImportName": "PublicSubnetSecurityGroupId",
+        "SubnetImportName": "InstancePublicSubnetId1"
       },
       "private1": {
-        "SGImportName": "InstanceInternalSecurityGroupId",
+        "SGImportName": "PrivateSubnetSecurityGroupId",
         "SubnetImportName": "InstancePrivateSubnetId1"
       },
+      "public2": {
+        "SGImportName": "PublicSubnetSecurityGroupId",
+        "SubnetImportName": "InstancePublicSubnetId2"
+      },
       "private2": {
-        "SGImportName": "InstanceInternalSecurityGroupId",
+        "SGImportName": "PrivateSubnetSecurityGroupId",
         "SubnetImportName": "InstancePrivateSubnetId2"
       }
+    }
+  },
+
+  "Conditions" : {
+    "IsPublicSubnet" : {
+      "Fn::Or": [
+        {"Fn::Equals" : [{"Ref" : "SubnetType"}, "public1"]},
+        {"Fn::Equals" : [{"Ref" : "SubnetType"}, "public2"]}
+      ]
     }
   },
 
@@ -89,8 +108,8 @@
             "Fn::Join": [
               "",
               [
-                "IPAddress=",
-                {"Ref": "IPAddress"}
+                "PublicIPAddress=",
+                { "Fn::If": [ "IsPublicSubnet", {"Ref": "IPAddress"}, "" ] }
               ]
             ]
           }
@@ -117,14 +136,14 @@
                 "Fn::Sub": [
                   "${StackName}-${GroupIdImportName}",
                   {
-                    "StackName": {"Ref": "VpcStackName"},
+                    "StackName": {"Ref": "SecurityGroupStackName"},
                     "GroupIdImportName": {"Fn::FindInMap": ["SubnetTypeMap", {"Ref": "SubnetType"}, "SGImportName"]}
                   }
                 ]
               }
             }
           ],
-          "AssociatePublicIpAddress": "true",
+          "AssociatePublicIpAddress": { "Fn::If": [ "IsPublicSubnet", "true", "false" ] },
           "DeviceIndex": "0",
           "DeleteOnTermination": "true",
           "SubnetId": {
@@ -145,7 +164,15 @@
         "Tags": [
           {
             "Key": "name",
-            "Value": { "Ref": "Name" }
+            "Value": {
+              "Fn::Join" : [
+                "-",
+                [
+                  { "Ref": "Name" },
+                  { "Ref" : "AWS::StackId" }
+                ]
+              ]
+            }
           }
         ]
       }
@@ -153,6 +180,7 @@
 
     "IPAddress": {
       "Type": "AWS::EC2::EIP",
+      "Condition": "IsPublicSubnet",
       "Properties": {
         "Domain": "vpc"
       }
@@ -160,6 +188,7 @@
 
     "IPAssoc": {
       "Type": "AWS::EC2::EIPAssociation",
+      "Condition": "IsPublicSubnet",
       "Properties": {
         "InstanceId": { "Ref": "EC2Instance" },
         "EIP": { "Ref": "IPAddress" }
@@ -193,6 +222,7 @@
         }
       }
     },
+
     "AZ": {
       "Description": "Availability Zone of the newly created EC2 instance",
       "Value": { "Fn::GetAtt": [ "EC2Instance", "AvailabilityZone" ] },
@@ -208,24 +238,11 @@
         }
       }
     },
-    "PublicDNS": {
-      "Description": "Public DNSName of the newly created EC2 instance",
-      "Value": { "Fn::GetAtt": [ "EC2Instance", "PublicDnsName" ] },
-      "Export": {
-        "Name": {
-          "Fn::Join" : [
-            "-",
-            [
-              { "Ref" : "AWS::StackName" },
-              "InstanceDNS",
-            ]
-          ]
-        }
-      }
-    },
+
     "PublicIP": {
       "Description": "Public IP address of the newly created EC2 instance",
       "Value": { "Fn::GetAtt": [ "EC2Instance", "PublicIp" ] },
+      "Condition": "IsPublicSubnet",
       "Export": {
         "Name": {
           "Fn::Join" : [

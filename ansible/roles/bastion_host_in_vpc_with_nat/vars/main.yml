@@ -1,0 +1,8 @@
+---
+
+instances:
+  - name: bastion-host-in-vpc-with-nat-public1-subnet
+    subnet: public1
+
+  - name: bastion-host-in-vpc-with-nat-public2-subnet
+    subnet: public2

@@ -1,9 +1,6 @@
 ---
 
 instances:
-  - name: ec2-vpc-with-nat-public-subnet
-    subnet: public
-
   - name: ec2-vpc-with-nat-private1-subnet
     subnet: private1
 

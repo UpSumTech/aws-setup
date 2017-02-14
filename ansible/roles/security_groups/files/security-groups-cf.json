@@ -1,0 +1,163 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates Security Groups for instances or containers",
+
+  "Parameters": {
+    "VpcStackName": {
+      "Description": "The VPC stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing VPC stack name"
+    }
+  },
+
+  "Resources": {
+    "BastionSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable ssh access to the bastion host",
+        "VpcId" : { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } },
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : "0.0.0.0/0"}
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "bastion-host-in-public-subnet-security-group", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "LoadBalancerSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow all kind of traffic to the load balancer",
+        "VpcId" : { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } },
+        "SecurityGroupIngress": [
+          { "IpProtocol": "-1", "CidrIp": "0.0.0.0/0" }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "instance-security-group", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "PublicSubnetSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Limit incoming traffic from the internet while allowing load balancers to be able to communicate along with bastion host to ssh in",
+        "VpcId" : { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } },
+        "SecurityGroupIngress": [
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
+          { "IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "CidrIp": "0.0.0.0/0"},
+          { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "SourceSecurityGroupId": { "Ref": "BastionSecurityGroup" } },
+          { "IpProtocol": "tcp", "FromPort": "1", "ToPort": "65535", "SourceSecurityGroupId": { "Ref": "LoadBalancerSecurityGroup" } }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "public-subnet-security-group", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "PrivateSubnetSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "VpcId" : { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } },
+        "GroupDescription": "Allow load balancer, bastion host  and instances from the public subnet to talk to instances in the private subnets",
+        "SecurityGroupIngress": [
+          { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "SourceSecurityGroupId": { "Ref": "BastionSecurityGroup" } },
+          { "IpProtocol": "tcp", "FromPort": "1", "ToPort": "65535", "SourceSecurityGroupId": { "Ref": "LoadBalancerSecurityGroup" } },
+          { "IpProtocol": "tcp", "FromPort": "1", "ToPort": "65535", "SourceSecurityGroupId": { "Ref": "PublicSubnetSecurityGroup" } }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "private-subnet-security-group", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    }
+
+  },
+
+  "Outputs": {
+    "BastionSecurityGroupId": {
+      "Description": "The security group id of the bastion host",
+      "Value": {"Fn::GetAtt": ["BastionSecurityGroup", "GroupId"]},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "BastionSecurityGroupId",
+            ]
+          ]
+        }
+      }
+    },
+
+    "LoadBalancerSecurityGroupId": {
+      "Description": "The security group id of the load balancers",
+      "Value": {"Fn::GetAtt": ["LoadBalancerSecurityGroup", "GroupId"]},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "LoadBalancerSecurityGroupId",
+            ]
+          ]
+        }
+      }
+    },
+
+    "PublicSubnetSecurityGroupId": {
+      "Description": "The security group id of instances in public subnets",
+      "Value": {"Fn::GetAtt": ["PublicSubnetSecurityGroup", "GroupId"]},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "PublicSubnetSecurityGroupId",
+            ]
+          ]
+        }
+      }
+    },
+
+    "PrivateSubnetSecurityGroupId": {
+      "Description": "The security group id of instances in private subnets",
+      "Value": {"Fn::GetAtt": ["PrivateSubnetSecurityGroup", "GroupId"]},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "PrivateSubnetSecurityGroupId",
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

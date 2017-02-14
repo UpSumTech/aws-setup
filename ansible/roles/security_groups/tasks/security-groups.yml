@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    stack_name: "{{ instance.name | regex_replace('[_.]', '-') }}-{{ region }}-stack"
+    stack_name: "security-groups-{{ region }}-stack"
 
 - name: is_stack_present
   shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
@@ -15,13 +15,9 @@
     stack_name: "{{ stack_name }}"
     region: "{{ region }}"
     state: "{{ stack_status }}"
-    template: "roles/ec2_with_vpc_no_nat/files/ec2-with-vpc-no-nat-cf.json"
+    template: "roles/security_groups/files/security-groups-cf.json"
     template_parameters:
-      Name: "{{ instance.name }}"
-      KeyName: "{{ key_name }}"
-      InstanceType: "t2.medium"
-      VpcStackName: "vpc-without-nat-{{ region }}-stack"
-      SubnetType: "{{ instance.subnet }}"
+      VpcStackName: "vpc-with-nat-{{ region }}-stack"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
@@ -32,5 +28,5 @@
   when: stack_status == "present"
 
 - set_fact:
-    "{{ instance.name | regex_replace('[-.]', '_') }}_{{ region | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
+    "security_groups_{{ region | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
   when: not ansible_check_mode and stack_status == "present"
