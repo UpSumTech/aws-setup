@@ -45,6 +45,21 @@
       "Description": "The type of the subnet for the instance",
       "Type": "String",
       "ConstraintDescription": "This must be either public1|private1|public2|private2"
+    },
+
+    "EC2InitScriptS3Bucket": {
+      "Description": "The S3 bucket containing the init script for the instance",
+      "Type": "String"
+    },
+
+    "EC2InitScriptS3Object": {
+      "Description": "The S3 object containing the init script for the instance",
+      "Type": "String"
+    },
+
+    "EC2InitScriptsVersion": {
+      "Description": "The version of init scripts",
+      "Type": "String"
     }
   },
 
@@ -102,18 +117,120 @@
   "Resources": {
     "EC2Instance": {
       "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "AWS::CloudFormation::Init" : {
+          "configSets": {
+            "ConfigureFetchExec" : [ "Configure", "Fetch", "Exec" ]
+          },
+
+          "Configure": {
+            "files": {
+              "/etc/cfn/cfn-hup.conf" : {
+                "content" : { "Fn::Join" : ["", [
+                  "[main]\n",
+                  "stack=", { "Ref" : "AWS::StackId" }, "\n",
+                  "region=", { "Ref" : "AWS::Region" }, "\n",
+                  "interval=10", "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+
+              "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
+                "content": { "Fn::Join" : ["", [
+                  "[cfn-auto-reloader-hook]\n",
+                  "triggers=post.update\n",
+                  "path=Resources.EC2Instance.Metadata.AWS::CloudFormation::Init\n",
+                  "action=/opt/aws/bin/cfn-init -v ",
+                  "         --stack ", { "Ref" : "AWS::StackName" },
+                  "         --resource EC2Instance ",
+                  "         --configsets ConfigureFetchExec ",
+                  "         --region ", { "Ref" : "AWS::Region" }, "\n",
+                  "runas=root", "\n"
+                ]]}
+              }
+            }
+          },
+
+          "Fetch": {
+            "commands": {
+              "0_fetch_init_script_from_s3": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "aws s3 cp s3://",
+                      { "Ref": "EC2InitScriptS3Bucket" }, "/", { "Ref": "EC2InitScriptS3Object" }, " ."
+                    ]
+                  ]
+                },
+                "cwd": "/usr/local/bin",
+                "ignoreErrors": "false"
+              },
+
+              "1_change_file_perms": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "chmod 0700 ",
+                      { "Ref": "EC2InitScriptS3Object" }
+                    ]
+                  ]
+                },
+                "cwd": "/usr/local/bin",
+                "ignoreErrors": "false"
+              }
+            }
+          },
+
+          "Exec": {
+            "commands": {
+              "0_exec_ec2_init_script": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "/usr/bin/env ", "bash ", "/usr/local/bin/", { "Ref": "EC2InitScriptS3Object" },
+                      " -b ", { "Ref": "EC2InitScriptS3Bucket"}, " -v ", { "Ref": "EC2InitScriptsVersion"}
+                    ]
+                  ]
+                },
+                "cwd": "/usr/local/bin",
+                "ignoreErrors": "false"
+              }
+            }
+          }
+        }
+      },
+
       "Properties": {
         "UserData": {
           "Fn::Base64": {
             "Fn::Join": [
               "",
               [
-                "PublicIPAddress=",
-                { "Fn::If": [ "IsPublicSubnet", {"Ref": "IPAddress"}, "" ] }
+                "#!/bin/bash -xe\n",
+                "yum install -y aws-cfn-bootstrap\n",
+
+                "# Install and run cloudformation init data from metadata\n",
+                "/opt/aws/bin/cfn-init -v ",
+                "         --stack ", { "Ref" : "AWS::StackName" },
+                "         --resource EC2Instance ",
+                "         --configsets ConfigureFetchExec ",
+                "         --region ", { "Ref" : "AWS::Region" }, "\n",
+
+                "# Signal the output status from cfn-init\n",
+                "/opt/aws/bin/cfn-signal -e $? ",
+                "         --stack ", { "Ref" : "AWS::StackName" },
+                "         --resource EC2Instance ",
+                "         --region ", { "Ref" : "AWS::Region" }, "\n"
               ]
             ]
           }
         },
+
         "InstanceType": { "Ref": "InstanceType" },
         "KeyName": { "Ref": "KeyName" },
         "ImageId": {

@@ -1,0 +1,65 @@
+#!/bin/bash
+# description: Starts script to replicate dynamodb tables
+
+# Source function library.
+. /etc/init.d/functions
+
+PIDFILE="/var/run/dynamodb_replicate.pid"
+LOGFILE="/var/log/dynamodb_replicate.log"
+PROGFILE="/usr/local/bin/dynamodb_replication.sh"
+
+validate() {
+  if [ ! -f "$PROGFILE" ]; then
+    echo "Prog file $PROGFILE not found"
+    exit 1
+  fi
+}
+
+start() {
+  if [[ -f $PIDFILE ]]; then
+    PID="$(cat "$PIDFILE")"
+    echo "Service dynamodb is already running: $PID"
+    exit 1
+  else
+    validate
+    echo "Starting service dynamodb replication"
+    su -c "start-stop-daemon --start -bmCv -x /usr/bin/nohup --pidfile \"$PIDFILE\" --exec \"$PROGFILE\" -- >> \"$LOGFILE\"" root
+    RETVAL=$?
+    echo
+    return $RETVAL
+  fi
+}
+
+stop() {
+  if [[ -f $PIDFILE ]]; then
+    echo "Stopping service dynamodb replication"
+    start-stop-daemon --stop --quiet --oknodo --pidfile "$PIDFILE"
+    RETVAL=$?
+  else
+    echo "Service dynamodb replication is not running"
+    exit 1
+  fi
+  echo
+  return $RETVAL
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  status)
+    status -p "$PIDFILE" "$PROGFILE"
+    ;;
+  restart)
+    stop
+    start
+    ;;
+  *)
+    echo "Usage:  {start|stop|status|restart}"
+    exit 1
+    ;;
+esac
+exit $RETVAL

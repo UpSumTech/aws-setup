@@ -1,5 +1,20 @@
 ---
 
+- name: bundle-and-upload-ec2-init-script-to-s3
+  shell: >
+    ./../bin/bundle_and_upload_ec2_init_package.py ec2-init-scripts v0.0.1
+  args:
+    executable: /bin/bash
+  register: ec2_init_scripts_uploaded
+
+- name: cp-init-script-to-s3
+  shell: >
+    aws s3 cp ./../bin/fetch-exec-init-package.sh s3://ec2-init-scripts/
+  args:
+    executable: /bin/bash
+  register: ec2_init_script_loader_uploaded
+  when: ec2_init_scripts_uploaded|success
+
 - set_fact:
     stack_name: "{{ instance.name | regex_replace('[_.]', '-') }}-{{ region }}-stack"
 
@@ -23,7 +38,10 @@
       VpcStackName: "vpc-with-nat-{{ region }}-stack"
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
       SubnetType: "{{ instance.subnet }}"
-  when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
+      EC2InitScriptS3Bucket: "ec2-init-scripts"
+      EC2InitScriptS3Object: "fetch-exec-init-package.sh"
+      EC2InitScriptsVersion: "v0.0.1"
+  when: (stack_status == 'present' and ec2_init_script_loader_uploaded) or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
   cloudformation_facts:
