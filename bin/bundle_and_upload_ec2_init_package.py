@@ -50,7 +50,7 @@ def _is_version_present():
 ################# Higher level functions ################
 #########################################################
 def validate():
-    if not 'aws-setup' in os.environ.get('VIRTUAL_ENV',''):
+    if not 'aws-setup-2.7.10' in os.environ.get('VIRTUAL_ENV',''):
         die("you need to 'workon aws-setup'")
     if not os.environ.get('AWS_ACCESS_KEY_ID') or not os.environ.get('AWS_SECRET_ACCESS_KEY'):
         die("The AWS_* env vars are missing")

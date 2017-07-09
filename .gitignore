@@ -1,2 +1,9 @@
 docker/.docker_login_mapping
 .vagrant
+*.retry
+*DStore
+~
+*.swp
+*.tmp
+.make/**
+.secrets/**

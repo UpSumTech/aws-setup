@@ -42,7 +42,7 @@
       "us-west-2": {
         "PublicSubnet1": "10.23.10.0/24",
         "PrivateSubnet1": "10.23.11.0/24",
-        "PublicSubnet1": "10.23.110.0/24",
+        "PublicSubnet2": "10.23.110.0/24",
         "PrivateSubnet2": "10.23.111.0/24"
       },
       "ca-central-1": {
@@ -220,17 +220,17 @@
       }
     },
 
-    "InternetGatewayRouteTable": {
+    "PublicSubnetRouteTable": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": { "Ref": "VPC" }
       }
     },
 
-    "InternetGatewayRoute": {
+    "PublicSubnetRoute": {
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "RouteTableId": { "Ref": "InternetGatewayRouteTable" },
+        "RouteTableId": { "Ref": "PublicSubnetRouteTable" },
         "DestinationCidrBlock": "0.0.0.0/0",
         "GatewayId": { "Ref": "InternetGateway" }
       }
@@ -240,7 +240,7 @@
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": { "Ref": "PublicSubnet1" },
-        "RouteTableId": { "Ref": "InternetGatewayRouteTable" }
+        "RouteTableId": { "Ref": "PublicSubnetRouteTable" }
       }
     },
 
@@ -248,37 +248,37 @@
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": { "Ref": "PublicSubnet2" },
-        "RouteTableId": { "Ref": "InternetGatewayRouteTable" }
+        "RouteTableId": { "Ref": "PublicSubnetRouteTable" }
       }
     },
 
-    "NATRouteTable1": {
+    "PrivateSubnetRouteTable1": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": { "Ref": "VPC" }
       }
     },
 
-    "NATRouteTable2": {
+    "PrivateSubnetRouteTable2": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": { "Ref": "VPC" }
       }
     },
 
-    "NATRoute1": {
+    "PrivateSubnetRoute1": {
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "RouteTableId": { "Ref": "NATRouteTable1" },
+        "RouteTableId": { "Ref": "PrivateSubnetRouteTable1" },
         "DestinationCidrBlock": "0.0.0.0/0",
         "NatGatewayId": { "Ref": "NAT1" }
       }
     },
 
-    "NATRoute2": {
+    "PrivateSubnetRoute2": {
       "Type": "AWS::EC2::Route",
       "Properties": {
-        "RouteTableId": { "Ref": "NATRouteTable2" },
+        "RouteTableId": { "Ref": "PrivateSubnetRouteTable2" },
         "DestinationCidrBlock": "0.0.0.0/0",
         "NatGatewayId": { "Ref": "NAT2" }
       }
@@ -288,7 +288,7 @@
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": { "Ref": "PrivateSubnet1" },
-        "RouteTableId": { "Ref": "NATRouteTable1" }
+        "RouteTableId": { "Ref": "PrivateSubnetRouteTable1" }
       }
     },
 
@@ -296,7 +296,7 @@
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": { "Ref": "PrivateSubnet2" },
-        "RouteTableId": { "Ref": "NATRouteTable2" }
+        "RouteTableId": { "Ref": "PrivateSubnetRouteTable2" }
       }
     }
 

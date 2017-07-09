@@ -9,7 +9,7 @@ get_os = $(if $(findstring Darwin,$(call uname_s)),MAC,LINUX)
 ## Variables
 
 CURRENT_DIR := $(dir $(lastword $(MAKEFILE_LIST)))
-VIRTUALENV_NAME := $(shell cat .env | cut -d' ' -f2)
+VIRTUALENV_NAME := $(shell pyenv virtualenvs | grep '\*' | cut -f2 -d ' ')
 
 DEBUG := off
 AT_off :=

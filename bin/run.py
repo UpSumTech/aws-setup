@@ -123,11 +123,11 @@ def _run_playbook(group, extra_vars={}, dry_run=True):
 __doc__="""Create cloudformation stacks
 
 Usage:
-    create.py iam --first-password=<first_password> --key-name=<key_name> --region=<region> [--delete] [--dry-run]
-    create.py vpc --region=<region> [--delete] [--dry-run]
-    create.py sg --region=<region> [--delete] [--dry-run]
-    create.py ec2 --key-name=<key_name> --region=<region> [--delete] [--dry-run]
-    create.py (-h | --help)
+    run.py iam --first-password=<first_password> --key-name=<key_name> --region=<region> [--delete] [--dry-run]
+    run.py vpc --region=<region> [--delete] [--dry-run]
+    run.py sg --region=<region> [--delete] [--dry-run]
+    run.py ec2 --key-name=<key_name> --region=<region> [--delete] [--dry-run]
+    run.py (-h | --help)
 
 Options:
     -h --help                           This displays the help menu.
