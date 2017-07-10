@@ -1,0 +1,6 @@
+---
+
+- include: rds-with-vpc-and-nat.yml
+  with_items: "{{ instances }}"
+  loop_control:
+    loop_var: instance

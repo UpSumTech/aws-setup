@@ -42,6 +42,8 @@ activate_profile_for_developer() {
   export AWS_ACCESS_KEY_ID="$DEVELOPER_AWS_ACCESS_KEY_ID"
   export AWS_SECRET_ACCESS_KEY="$DEVELOPER_AWS_SECRET_ACCESS_KEY"
   export AWS_ACCOUNT_ID="$DEVELOPER_AWS_ACCOUNT_ID"
+  export AWS_ACCESS_KEY="$DEVELOPER_AWS_ACCESS_KEY_ID"
+  export AWS_SECRET_KEY="$DEVELOPER_AWS_SECRET_ACCESS_KEY"
   activate_profile_helper "developer"
 }
 
@@ -54,6 +56,8 @@ activate_profile_for_admin() {
   export AWS_ACCESS_KEY_ID="$ADMIN_AWS_ACCESS_KEY_ID"
   export AWS_SECRET_ACCESS_KEY="$ADMIN_AWS_SECRET_ACCESS_KEY"
   export AWS_ACCOUNT_ID="$ADMIN_AWS_ACCOUNT_ID"
+  export AWS_ACCESS_KEY="$ADMIN_AWS_ACCESS_KEY_ID"
+  export AWS_SECRET_KEY="$ADMIN_AWS_SECRET_ACCESS_KEY"
   activate_profile_helper "admin"
 }
 
@@ -66,6 +70,8 @@ activate_profile_for_superuser() {
   export AWS_ACCESS_KEY_ID="$SUPERUSER_AWS_ACCESS_KEY_ID"
   export AWS_SECRET_ACCESS_KEY="$SUPERUSER_AWS_SECRET_ACCESS_KEY"
   export AWS_ACCOUNT_ID="$SUPERUSER_AWS_ACCOUNT_ID"
+  export AWS_ACCESS_KEY="$SUPERUSER_AWS_ACCESS_KEY_ID"
+  export AWS_SECRET_KEY="$SUPERUSER_AWS_SECRET_ACCESS_KEY"
   activate_profile_helper "superuser"
 }
 
@@ -75,8 +81,6 @@ deactivate_profile_for_superuser() {
 
 activate_profile_helper() {
   export CURRENT_PROFILE="$1"
-  export AWS_ACCESS_KEY="$AWS_ACCESS_KEY_ID"
-  export AWS_SECRET_KEY="$AWS_SECRET_ACCESS_KEY"
   echo "Set current profile to $CURRENT_PROFILE"
 }
 

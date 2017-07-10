@@ -303,7 +303,7 @@
   },
 
   "Outputs": {
-    "InstancePublicSubnetId1": {
+    "PublicSubnetId1": {
       "Description": "The id of the public subnet 1",
       "Value": { "Ref": "PublicSubnet1" },
       "Export": {
@@ -312,14 +312,14 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "InstancePublicSubnetId1",
+              "PublicSubnetId1",
             ]
           ]
         }
       }
     },
 
-    "InstancePublicSubnetId2": {
+    "PublicSubnetId2": {
       "Description": "The id of the public subnet 2",
       "Value": { "Ref": "PublicSubnet2" },
       "Export": {
@@ -328,14 +328,14 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "InstancePublicSubnetId2",
+              "PublicSubnetId2",
             ]
           ]
         }
       }
     },
 
-    "InstancePrivateSubnetId1": {
+    "PrivateSubnetId1": {
       "Description": "The id of the private subnet 1",
       "Value": { "Ref": "PrivateSubnet1" },
       "Export": {
@@ -344,14 +344,14 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "InstancePrivateSubnetId1",
+              "PrivateSubnetId1",
             ]
           ]
         }
       }
     },
 
-    "InstancePrivateSubnetId2": {
+    "PrivateSubnetId2": {
       "Description": "The id of the private subnet 2",
       "Value": { "Ref": "PrivateSubnet2" },
       "Export": {
@@ -360,7 +360,7 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "InstancePrivateSubnetId2",
+              "PrivateSubnetId2",
             ]
           ]
         }

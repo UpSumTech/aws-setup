@@ -73,11 +73,11 @@
     "SubnetTypeMap": {
       "public1": {
         "SGImportName": "BastionSecurityGroupId",
-        "SubnetImportName": "InstancePublicSubnetId1"
+        "SubnetImportName": "PublicSubnetId1"
       },
       "public2": {
         "SGImportName": "BastionSecurityGroupId",
-        "SubnetImportName": "InstancePublicSubnetId2"
+        "SubnetImportName": "PublicSubnetId2"
       }
     }
   },

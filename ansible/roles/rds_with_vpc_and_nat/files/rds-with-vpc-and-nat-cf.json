@@ -1,0 +1,184 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates RDS instance inside a VPC with nat",
+
+  "Parameters": {
+    "DBClass": {
+      "Description": "The class of the database engine",
+      "Type": "String",
+      "ConstraintDescription": "This must be one of the following values - micro|small|medium"
+    },
+
+    "DBEngine": {
+      "Description": "The name of the database engine",
+      "Type": "String",
+      "ConstraintDescription": "This must be one of the following values - postgres|mysql|mariadb"
+    },
+
+    "DBName": {
+      "Description": "The name of the database",
+      "Type": "String"
+    },
+
+    "DBUser": {
+      "Description": "The name of the master user",
+      "Type": "String"
+    },
+
+    "DBPassword": {
+      "Description": "The master password for the database",
+      "Type": "String"
+    },
+
+    "AllocatedStorage": {
+      "Description": "The allocated storage for the database",
+      "Type": "String"
+    },
+
+    "VpcStackName": {
+      "Description": "The VPC stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing VPC stack name"
+    },
+
+    "SecurityGroupStackName": {
+      "Description": "The security group stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing stack name for security groups"
+    }
+  },
+
+  "Mappings": {
+    "AWSDBClassType2Arch": {
+      "micro": {"class": "db.t2.micro"},
+      "small": {"class": "db.t2.small"},
+      "medium": {"class": "db.t2.medium"}
+    },
+
+    "SubnetTypeMap": {
+      "private1": {
+        "SubnetImportName": "PrivateSubnetId1"
+      },
+      "private2": {
+        "SubnetImportName": "PrivateSubnetId2"
+      }
+    },
+
+    "DbEngineToVersion": {
+      "postgres": {"version": "9.6.2"},
+      "mysql": {"version": "5.7.17"},
+      "mariadb": {"version": "5.6"}
+    }
+  },
+
+  "Resources": {
+    "DBSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "AWS DB subnet group",
+        "SubnetIds" : [
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": [
+                "${StackName}-${SubnetIdImportName}",
+                {
+                  "StackName": {"Ref": "VpcStackName"},
+                  "SubnetIdImportName": {"Fn::FindInMap": ["SubnetTypeMap", "private1", "SubnetImportName"]}
+                }
+              ]
+            }
+          },
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": [
+                "${StackName}-${SubnetIdImportName}",
+                {
+                  "StackName": {"Ref": "VpcStackName"},
+                  "SubnetIdImportName": {"Fn::FindInMap": ["SubnetTypeMap", "private2", "SubnetImportName"]}
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "name",
+            "Value": {
+              "Fn::Join" : [
+                "-",
+                [
+                  { "Ref": "DBName" },
+                  "DBSubnetGroup",
+                  { "Ref" : "AWS::StackId" }
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+
+    "DBInstance" : {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "DBName": {"Ref": "DBName" },
+        "Engine": {"Ref": "DBEngine"},
+        "EngineVersion" : {"Fn::FindInMap": ["DbEngineToVersion", {"Ref": "DBEngine"}, "version"]},
+        "MasterUsername": {"Ref": "DBUser" },
+        "MasterUserPassword": {"Ref": "DBPassword" },
+        "DBInstanceClass": {"Fn::FindInMap": ["AWSDBClassType2Arch", {"Ref": "DBClass"}, "class"]},
+        "AllocatedStorage": {"Ref": "AllocatedStorage"},
+        "DBSubnetGroupName": {"Ref": "DBSubnetGroup"},
+        "VPCSecurityGroups": [
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": [
+                "${StackName}-${SecurityGroupImportName}",
+                {
+                  "StackName": {"Ref": "SecurityGroupStackName"},
+                  "SecurityGroupImportName": "PrivateSubnetDbSecurityGroupId"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "DeletionPolicy" : "Snapshot"
+    }
+  },
+
+  "Outputs": {
+    "EndpointAddress": {
+      "Description": "Database endpoint address",
+      "Value": {"Fn::GetAtt": ["DBInstance", "Endpoint.Address"]},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "DBAddress"
+            ]
+          ]
+        }
+      }
+    },
+
+    "EndpointPort": {
+      "Description": "Database endpoint port",
+      "Value": {"Fn::GetAtt": ["DBInstance", "Endpoint.Port"]},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "DBPort"
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

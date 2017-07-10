@@ -126,6 +126,8 @@ Usage:
     run.py iam --first-password=<first_password> --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     run.py vpc --region=<region> [--delete] [--dry-run]
     run.py sg --region=<region> [--delete] [--dry-run]
+    run.py bastion --key-name=<key_name> --region=<region> [--delete] [--dry-run]
+    run.py rds --db-name=<db_name> --db-user=<db_user> --db-password=<db_password> --db-engine=<db_engine> --region=<region> [--delete] [--dry-run]
     run.py ec2 --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     run.py (-h | --help)
 
@@ -134,6 +136,10 @@ Options:
     --region=<region>                   The region of the cloudformation stacks.
     --first-password=<first_password>   The first password with which the users are being created.
     --key-name=<key_name>               The key name that will allow ssh access to ec2 instance.
+    --db-name=<db_name>                 The name of the database.
+    --db-user=<db_user>                 The username of the database.
+    --db-password=<db_password>         The password of the database.
+    --db-engine=<db_engine>             The database engine. Valid values are mysql|postgres|mariadb.
     --delete                            This option will delete the stacks.
     --dry-run                           This option will perform a dry run of the stacks.
 """
@@ -162,6 +168,15 @@ def main(args=None):
         extra_vars['first_password'] = args['--first-password'] or os.environ['FIRST_PASSWORD']
         extra_vars['key_name'] = args['--key-name']
         _run_playbook('iam', extra_vars=extra_vars, dry_run=dry_run)
+    elif args['bastion']:
+        extra_vars['key_name'] = args['--key-name']
+        _run_playbook('bastion', extra_vars=extra_vars, dry_run=dry_run)
+    elif args['rds']:
+        extra_vars['db_name'] = args['--db-name']
+        extra_vars['db_user'] = args['--db-user']
+        extra_vars['db_password'] = args['--db-password']
+        extra_vars['db_engine'] = args['--db-engine']
+        _run_playbook('rds', extra_vars=extra_vars, dry_run=dry_run)
     elif args['ec2']:
         extra_vars['key_name'] = args['--key-name']
         _run_playbook('ec2', extra_vars=extra_vars, dry_run=dry_run)

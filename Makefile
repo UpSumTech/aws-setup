@@ -31,12 +31,14 @@ SG_TASK_FILES := $(call rfind,ansible/roles,security*/tasks/[^.]*.yml)
 SG_VAR_FILES := $(call rfind,ansible/roles,security*/vars/[^.]*.yml) \
 	$(call rfind,ansible/group_vars, *)
 
-EC2_CF_FILES := $(call rfind,ansible/roles,bastion*/files/[^.]*.json) \
-	$(call rfind,ansible/roles,ec2*/files/[^.]*.json)
-EC2_TASK_FILES := $(call rfind,ansible/roles,bastion*/tasks/[^.]*.yml) \
-	$(call rfind,ansible/roles,ec2*/tasks/[^.]*.yml)
+BASTION_CF_FILES := $(call rfind,ansible/roles,bastion*/files/[^.]*.json)
+BASTION_TASK_FILES := $(call rfind,ansible/roles,bastion*/tasks/[^.]*.yml)
+BASTION_VAR_FILES := $(call rfind,ansible/roles,bastion*/vars/[^.]*.yml) \
+	$(call rfind,ansible/group_vars, *)
+
+EC2_CF_FILES := $(call rfind,ansible/roles,ec2*/files/[^.]*.json)
+EC2_TASK_FILES := $(call rfind,ansible/roles,ec2*/tasks/[^.]*.yml)
 EC2_VAR_FILES := $(call rfind,ansible/roles,ec2*/vars/[^.]*.yml) \
-	$(call rfind,ansible/roles,bastion*/vars/[^.]*.yml) \
 	$(call rfind,ansible/group_vars, *)
 
 DEPS_STATEFILE = .make/done_deps
@@ -95,13 +97,37 @@ test_sg: deps $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES)
 	$(AT)echo $(SG_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
 	$(AT)./bin/run.py sg --region=us-west-2 --dry-run
 
-build_sg: test_ec2 $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/build_iam.yml
+build_sg: test_sg $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/build_iam.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
 	$(AT)./bin/run.py sg --region=$(AWS_REGION)
 
-teardown_sg: test_iam $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/teardown_iam.yml
+teardown_sg: test_sg $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/teardown_iam.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
 	$(AT)./bin/run.py sg --region=$(AWS_REGION) --delete
+
+test_bastion: deps $(BASTION_CF_FILES) $(BASTION_VAR_FILES) $(BASTION_TASK_FILES)
+	$(AT)echo $(BASTION_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
+	$(AT)./bin/run.py bastion --region=us-west-2 --key-name=noop --dry-run
+
+build_bastion: test_bastion $(BASTION_CF_FILES) $(BASTION_VAR_FILES) $(BASTION_TASK_FILES) ansible/build_iam.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py bastion --region=$(AWS_REGION) --key-name=$(KEY_NAME)
+
+teardown_bastion: test_bastion $(BASTION_CF_FILES) $(BASTION_VAR_FILES) $(BASTION_TASK_FILES) ansible/teardown_iam.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py bastion --region=$(AWS_REGION) --key-name=noop --delete
+
+test_rds: deps $(RDS_CF_FILES) $(RDS_VAR_FILES) $(RDS_TASK_FILES)
+	$(AT)echo $(RDS_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
+	$(AT)./bin/run.py rds --db-name='foo' --db-user='bar' --db-password='blah' --db-engine='mysql' --region=us-west-2 --dry-run
+
+build_rds: test_rds $(RDS_CF_FILES) $(RDS_VAR_FILES) $(RDS_TASK_FILES) ansible/build_iam.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py rds --db-name=$(DB_NAME) --db-user=$(DB_USER) --db-password=$(DB_PASSWORD) --db-engine=$(DB_ENGINE) --region=$(AWS_REGION)
+
+teardown_rds: test_rds $(RDS_CF_FILES) $(RDS_VAR_FILES) $(RDS_TASK_FILES) ansible/teardown_iam.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py rds --db-name=$(DB_NAME) --db-user=$(DB_USER) --db-password=$(DB_PASSWORD) --db-engine=$(DB_ENGINE) --region=$(AWS_REGION) --delete
 
 test_ec2: deps $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES)
 	$(AT)echo $(EC2_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
@@ -111,7 +137,7 @@ build_ec2: test_ec2 $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES) ansible/b
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
 	$(AT)./bin/run.py ec2 --region=$(AWS_REGION) --key-name=$(KEY_NAME)
 
-teardown_ec2: test_iam $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES) ansible/teardown_iam.yml
+teardown_ec2: test_ec2 $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES) ansible/teardown_iam.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
 	$(AT)./bin/run.py ec2 --region=$(AWS_REGION) --key-name=noop --delete
 
