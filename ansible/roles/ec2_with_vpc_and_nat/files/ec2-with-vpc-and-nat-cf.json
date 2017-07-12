@@ -72,17 +72,17 @@
     },
 
     "AWSRegionArch2AMI": {
-      "us-east-1"        : { "HVM64": "ami-a9210ebf" },
-      "us-east-2"        : { "HVM64": "ami-9c92b4f9" },
-      "us-west-1"        : { "HVM64": "ami-3af0dd5a" },
+      "us-east-1"        : { "HVM64": "ami-d15a75c7" },
+      "us-east-2"        : { "HVM64": "ami-8b92b4ee" },
+      "us-west-1"        : { "HVM64": "ami-73f7da13" },
       "us-west-2"        : { "HVM64": "ami-835b4efa" },
-      "ca-central-1"     : { "HVM64": "ami-acd669c8" },
-      "eu-west-1"        : { "HVM64": "ami-ff4f5799" },
-      "eu-west-2"        : { "HVM64": "ami-i3871675c" },
-      "eu-central-1"     : { "HVM64": "ami-8843e4e7" },
-      "ap-southeast-1"   : { "HVM64": "ami-9b76fbf8" },
-      "ap-southeast-2"   : { "HVM64": "ami-c37464a0" },
-      "ap-south-1"       : { "HVM64": "ami-8be699e4" }
+      "ca-central-1"     : { "HVM64": "ami-b3d965d7" },
+      "eu-west-1"        : { "HVM64": "ami-6d48500b" },
+      "eu-west-2"        : { "HVM64": "ami-cc7066a8" },
+      "eu-central-1"     : { "HVM64": "ami-1c45e273" },
+      "ap-southeast-1"   : { "HVM64": "ami-2378f540" },
+      "ap-southeast-2"   : { "HVM64": "ami-e94e5e8a" },
+      "ap-south-1"       : { "HVM64": "ami-49e59a26" }
     },
 
     "SubnetTypeMap": {
