@@ -43,3 +43,7 @@
     - role: ec2_with_vpc_and_nat
       tags:
         - ec2
+
+    - role: elb_with_vpc
+      tags:
+        - elb

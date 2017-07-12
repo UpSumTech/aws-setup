@@ -65,24 +65,24 @@
 
   "Mappings": {
     "AWSInstanceType2Arch": {
-      "t2.micro"    : { "Arch": "HVM64"  },
-      "t2.small"    : { "Arch": "HVM64"  },
-      "t2.medium"   : { "Arch": "HVM64"  },
-      "m3.medium"   : { "Arch": "HVM64"  }
+      "t2.micro"    : { "Arch": "HVM64" },
+      "t2.small"    : { "Arch": "HVM64" },
+      "t2.medium"   : { "Arch": "HVM64" },
+      "m3.medium"   : { "Arch": "HVM64" }
     },
 
     "AWSRegionArch2AMI": {
-      "us-east-1"        : { "HVM64": "ami-4de4f15a" },
-      "us-east-2"        : { "HVM64": "ami-39cd975c" },
-      "us-west-1"        : { "HVM64": "ami-573e6f37" },
-      "us-west-2"        : { "HVM64": "ami-3d2b9f5d" },
-      "ca-central-1"     : { "HVM64": "ami-b02a98d4" },
-      "eu-west-1"        : { "HVM64": "ami-6f1b3b1c" },
-      "eu-west-2"        : { "HVM64": "ami-05e2e861" },
-      "eu-central-1"     : { "HVM64": "ami-ef18d880" },
-      "ap-southeast-1"   : { "HVM64": "ami-73d57b10" },
-      "ap-southeast-2"   : { "HVM64": "ami-eccdf68f" },
-      "ap-south-1"       : { "HVM64": "ami-3cc7b053" }
+      "us-east-1"        : { "HVM64": "ami-a9210ebf" },
+      "us-east-2"        : { "HVM64": "ami-9c92b4f9" },
+      "us-west-1"        : { "HVM64": "ami-3af0dd5a" },
+      "us-west-2"        : { "HVM64": "ami-835b4efa" },
+      "ca-central-1"     : { "HVM64": "ami-acd669c8" },
+      "eu-west-1"        : { "HVM64": "ami-ff4f5799" },
+      "eu-west-2"        : { "HVM64": "ami-i3871675c" },
+      "eu-central-1"     : { "HVM64": "ami-8843e4e7" },
+      "ap-southeast-1"   : { "HVM64": "ami-9b76fbf8" },
+      "ap-southeast-2"   : { "HVM64": "ami-c37464a0" },
+      "ap-south-1"       : { "HVM64": "ami-8be699e4" }
     },
 
     "SubnetTypeMap": {
@@ -120,7 +120,19 @@
       "Metadata": {
         "AWS::CloudFormation::Init" : {
           "configSets": {
-            "ConfigureFetchExec" : [ "Configure", "Fetch", "Exec" ]
+            "ConfigureFetchExec" : [ "InstallDeps", "Configure", "Fetch", "Exec" ]
+          },
+
+          "InstallDeps": {
+            "packages": {
+              "apt": {
+                "coreutils": [],
+                "ruby": []
+              },
+              "python": {
+                "awscli": []
+              }
+            }
           },
 
           "Configure": {
@@ -142,7 +154,7 @@
                   "[cfn-auto-reloader-hook]\n",
                   "triggers=post.update\n",
                   "path=Resources.EC2Instance.Metadata.AWS::CloudFormation::Init\n",
-                  "action=/opt/aws/bin/cfn-init -v ",
+                  "action=/usr/local/bin/cfn-init -v ",
                   "         --stack ", { "Ref" : "AWS::StackName" },
                   "         --resource EC2Instance ",
                   "         --configsets ConfigureFetchExec ",
@@ -212,17 +224,25 @@
               "",
               [
                 "#!/bin/bash -xe\n",
-                "yum install -y aws-cfn-bootstrap\n",
+                "set -o pipefail\n",
+                "apt-get update\n",
+                "apt-get -y install python-pip\n",
+                "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
+                "pip install awscli \n",
+                "cp /usr/local/init/ubuntu/cfn-hup /etc/init.d/cfn-hup \n",
+                "chmod +x /etc/init.d/cfn-hup \n",
+                "update-rc.d cfn-hup defaults \n ",
+                "service cfn-hup start \n",
 
                 "# Install and run cloudformation init data from metadata\n",
-                "/opt/aws/bin/cfn-init -v ",
+                "/usr/local/bin/cfn-init -v ",
                 "         --stack ", { "Ref" : "AWS::StackName" },
                 "         --resource EC2Instance ",
                 "         --configsets ConfigureFetchExec ",
                 "         --region ", { "Ref" : "AWS::Region" }, "\n",
 
                 "# Signal the output status from cfn-init\n",
-                "/opt/aws/bin/cfn-signal -e $? ",
+                "/usr/local/bin/cfn-signal -e $? ",
                 "         --stack ", { "Ref" : "AWS::StackName" },
                 "         --resource EC2Instance ",
                 "         --region ", { "Ref" : "AWS::Region" }, "\n"

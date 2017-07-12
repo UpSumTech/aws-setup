@@ -1,0 +1,109 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates elb inside a VPC",
+
+  "Parameters": {
+    "VpcStackName": {
+      "Description": "The VPC stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing VPC stack name"
+    },
+
+    "SecurityGroupStackName": {
+      "Description": "The security group stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing stack name for security groups"
+    }
+  },
+
+  "Mappings": {
+    "SubnetTypeMap": {
+      "public1": {
+        "SubnetImportName": "PublicSubnetId1"
+      },
+      "public2": {
+        "SubnetImportName": "PublicSubnetId2"
+      }
+    }
+  },
+
+  "Resources": {
+    "ElasticLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "LoadBalancerName": {"Fn::Join": ["-", ["elb", "webapp", { "Ref": "AWS::Region" } ]]},
+        "Instances": ["i-0dddb40a8a70d06a4", "i-0dab7f70629981963"],
+        "SecurityGroups": [
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": [
+                "${StackName}-${SecurityGroupImportName}",
+                {
+                  "StackName": {"Ref": "SecurityGroupStackName"},
+                  "SecurityGroupImportName": "LoadBalancerSecurityGroupId"
+                }
+              ]
+            }
+          }
+        ],
+        "Subnets": [
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": [
+                "${StackName}-${SubnetIdImportName}",
+                {
+                  "StackName": {"Ref": "VpcStackName"},
+                  "SubnetIdImportName": {"Fn::FindInMap": ["SubnetTypeMap", "public1", "SubnetImportName"]}
+                }
+              ]
+            }
+          },
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": [
+                "${StackName}-${SubnetIdImportName}",
+                {
+                  "StackName": {"Ref": "VpcStackName"},
+                  "SubnetIdImportName": {"Fn::FindInMap": ["SubnetTypeMap", "public2", "SubnetImportName"]}
+                }
+              ]
+            }
+          }
+        ],
+        "Listeners": [
+          {
+            "LoadBalancerPort": "80",
+            "InstancePort": "80",
+            "Protocol": "HTTP"
+          }
+        ],
+        "HealthCheck": {
+          "Target": { "Fn::Join": [ "", ["HTTP:80", "/"]]},
+          "HealthyThreshold": "5",
+          "UnhealthyThreshold": "3",
+          "Interval": "30",
+          "Timeout": "5"
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "EndpointAddress": {
+      "Description": "Elastic loadbalancer id",
+      "Value": {"Ref": "ElasticLoadBalancer"},
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            "-",
+            [
+              { "Ref": "AWS::StackName" },
+              "ElasticLoadBalancer"
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

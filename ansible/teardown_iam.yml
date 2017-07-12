@@ -4,6 +4,10 @@
   gather_facts: yes
   connection: local
   roles:
+    - role: elb_with_vpc
+      tags:
+        - elb
+
     - role: ec2_with_vpc_and_nat
       tags:
         - ec2

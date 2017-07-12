@@ -41,6 +41,16 @@ EC2_TASK_FILES := $(call rfind,ansible/roles,ec2*/tasks/[^.]*.yml)
 EC2_VAR_FILES := $(call rfind,ansible/roles,ec2*/vars/[^.]*.yml) \
 	$(call rfind,ansible/group_vars, *)
 
+RDS_CF_FILES := $(call rfind,ansible/roles,rds*/files/[^.]*.json)
+RDS_TASK_FILES := $(call rfind,ansible/roles,rds*/tasks/[^.]*.yml)
+RDS_VAR_FILES := $(call rfind,ansible/roles,rds*/vars/[^.]*.yml) \
+	$(call rfind,ansible/group_vars, *)
+
+ELB_CF_FILES := $(call rfind,ansible/roles,elb*/files/[^.]*.json)
+ELB_TASK_FILES := $(call rfind,ansible/roles,elb*/tasks/[^.]*.yml)
+ELB_VAR_FILES := $(call rfind,ansible/roles,elb*/vars/[^.]*.yml) \
+	$(call rfind,ansible/group_vars, *)
+
 DEPS_STATEFILE = .make/done_deps
 
 OS := $(call get_os)
@@ -140,6 +150,18 @@ build_ec2: test_ec2 $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES) ansible/b
 teardown_ec2: test_ec2 $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES) ansible/teardown_iam.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
 	$(AT)./bin/run.py ec2 --region=$(AWS_REGION) --key-name=noop --delete
+
+test_elb: deps $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES)
+	$(AT)echo $(ELB_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
+	$(AT)./bin/run.py elb --region=us-west-2 --dry-run
+
+build_elb: test_elb $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES) ansible/build_iam.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py elb --region=$(AWS_REGION)
+
+teardown_elb: test_elb $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES) ansible/teardown_iam.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py elb --region=$(AWS_REGION) --delete
 
 clean:
 	$(AT)rm -rf .make

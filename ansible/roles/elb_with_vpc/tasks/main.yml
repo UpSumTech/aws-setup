@@ -1,0 +1,3 @@
+---
+
+- include: elb-with-vpc.yml
