@@ -19,7 +19,7 @@
     template_parameters:
       Name: "{{ instance.name }}"
       KeyName: "{{ key_name }}"
-      InstanceType: "t2.medium"
+      InstanceType: "{{ instance.type }}"
       VpcStackName: "vpc-with-nat-{{ region }}-stack"
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
       SubnetType: "{{ instance.subnet }}"

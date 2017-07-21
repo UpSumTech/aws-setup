@@ -2,7 +2,7 @@
 
 instances:
   - name: "{{ db_name | default('testdb') | regex_replace('[_.]', '-') }}-rds-vpc-nat-private1"
-    db_class: "micro"
+    db_class: "{{ db_class | default('micro') }}"
     db_engine: "{{ db_engine | default('postgres') }}"
     db_name: "{{ db_name | default('testdb') }}"
     db_user: "{{ db_user | default('foo') }}"

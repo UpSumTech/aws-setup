@@ -3,6 +3,10 @@
 instances:
   - name: ec2-vpc-with-nat-private1-subnet
     subnet: private1
+    type: "{{ instance_type | default('micro') }}"
+    init_script_version: "{{ instance_type | default('v0.0.1') }}"
 
   - name: ec2-vpc-with-nat-private2-subnet
     subnet: private2
+    type: "{{ instance_type | default('micro') }}"
+    init_script_version: "{{ instance_type | default('v0.0.1') }}"

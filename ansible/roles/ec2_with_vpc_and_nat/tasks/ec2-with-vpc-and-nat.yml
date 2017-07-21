@@ -34,13 +34,13 @@
     template_parameters:
       Name: "{{ instance.name }}"
       KeyName: "{{ key_name }}"
-      InstanceType: "t2.medium"
+      InstanceType: "{{ instance.type }}"
       VpcStackName: "vpc-with-nat-{{ region }}-stack"
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
       SubnetType: "{{ instance.subnet }}"
       EC2InitScriptS3Bucket: "ec2-init-scripts"
       EC2InitScriptS3Object: "fetch-exec-init-package.sh"
-      EC2InitScriptsVersion: "v0.0.1"
+      EC2InitScriptsVersion: "{{ instance.init_script_version }}"
   when: (stack_status == 'present' and ec2_init_script_loader_uploaded) or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"

@@ -81,23 +81,11 @@
             {
               "Effect": "Allow",
               "Action": [
-                "rds:DescribeDBInstances",
-                "rds:DescribeDBEngineVersions"
-              ],
-              "Resource": "*"
-            },
-
-            {
-              "Effect": "Allow",
-              "Action": [
-                "dynamodb:Batch*",
-                "dynamodb:DescribeTable",
-                "dynamodb:GetItem",
-                "dynamodb:GetRecords",
-                "dynamodb:PutItem",
-                "dynamodb:Query",
-                "dynamodb:Scan",
-                "dynamodb:UpdateItem",
+                "rds:*",
+                "dynamodb:*",
+                "elasticache:*",
+                "redshift:*",
+                "sdb:*"
               ],
               "Resource": "*"
             }
@@ -105,7 +93,7 @@
         },
 
         "Roles": [
-          { "Fn::Sub": [ "compute-role", { "Service": { "Ref" : "ServiceName" } } ] }
+          "compute-role"
         ]
       }
     }

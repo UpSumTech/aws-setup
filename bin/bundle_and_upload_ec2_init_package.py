@@ -19,6 +19,7 @@ package_name = 'ec2setup.zip'
 files_to_upload = [
         "setup-users-groups.sh",
         "harden-os.sh",
+        "prepare-workstation.sh",
         "get-os-info.sh",
         "fetch-service-artifacts.sh",
         "get-initd-scripts.sh",

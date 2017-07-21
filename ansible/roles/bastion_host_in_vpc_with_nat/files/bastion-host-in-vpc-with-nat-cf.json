@@ -18,12 +18,11 @@
     "InstanceType": {
       "Description": "EC2 instance type",
       "Type": "String",
-      "Default": "t2.micro",
+      "Default": "micro",
       "AllowedValues": [
-        "t2.micro",
-        "t2.small",
-        "t2.medium",
-        "m3.medium"
+        "micro",
+        "small",
+        "medium"
       ]
       ,
       "ConstraintDescription": "This must be a valid EC2 instance type"
@@ -49,11 +48,16 @@
   },
 
   "Mappings": {
+    "AWSClassType2InstanceType": {
+      "micro": {"class": "t2.micro"},
+      "small": {"class": "t2.small"},
+      "medium": {"class": "t2.medium"}
+    },
+
     "AWSInstanceType2Arch": {
       "t2.micro"    : { "Arch": "HVM64"  },
       "t2.small"    : { "Arch": "HVM64"  },
-      "t2.medium"   : { "Arch": "HVM64"  },
-      "m3.medium"   : { "Arch": "HVM64"  }
+      "t2.medium"   : { "Arch": "HVM64"  }
     },
 
     "AWSRegionArch2AMI": {
@@ -97,7 +101,7 @@
             ]
           }
         },
-        "InstanceType": { "Ref": "InstanceType" },
+        "InstanceType": {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "InstanceType"}, "class"]},
         "KeyName": { "Ref": "KeyName" },
         "ImageId": {
           "Fn::FindInMap": [
@@ -106,7 +110,7 @@
             {
               "Fn::FindInMap": [
                 "AWSInstanceType2Arch",
-                { "Ref": "InstanceType" },
+                {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "InstanceType"}, "class"]},
                 "Arch"
               ]
             }

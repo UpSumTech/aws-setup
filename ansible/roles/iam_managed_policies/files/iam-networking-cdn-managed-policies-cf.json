@@ -68,6 +68,32 @@
           { "Fn::Sub": [ "developer-${Service}-role", { "Service": { "Ref" : "ServiceName" } } ] }
         ]
       }
+    },
+
+    "ComputeManagedPolicies": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "route53:List*",
+                "route53:Get*",
+                "route53domains:Get*",
+                "route53domains:List*",
+                "cloudfront:*"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+
+        "Roles": [
+          "compute-role"
+        ]
+      }
     }
 
   }

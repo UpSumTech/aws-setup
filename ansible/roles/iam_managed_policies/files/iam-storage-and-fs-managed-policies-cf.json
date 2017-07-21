@@ -96,7 +96,7 @@
         },
 
         "Roles": [
-          { "Fn::Sub": [ "compute-role", { "Service": { "Ref" : "ServiceName" } } ] }
+          "compute-role"
         ]
       }
     }

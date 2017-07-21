@@ -82,9 +82,9 @@ def _run_playbook(group, extra_vars={}, dry_run=True):
     options = Options()
 
     if extra_vars['stack_status'] == 'absent':
-        playbook = os.path.join(os.getcwd(), 'ansible/teardown_iam.yml')
+        playbook = os.path.join(os.getcwd(), 'ansible/teardown.yml')
     else:
-        playbook = os.path.join(os.getcwd(), 'ansible/build_iam.yml')
+        playbook = os.path.join(os.getcwd(), 'ansible/build.yml')
 
     #  Modify the objects to be able to run the playbook
     variable_manager.extra_vars = extra_vars
@@ -126,6 +126,7 @@ Usage:
     run.py iam --first-password=<first_password> --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     run.py vpc --region=<region> [--delete] [--dry-run]
     run.py sg --region=<region> [--delete] [--dry-run]
+    run.py kms --region=<region> [--delete] [--dry-run]
     run.py bastion --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     run.py rds --db-name=<db_name> --db-user=<db_user> --db-password=<db_password> --db-engine=<db_engine> --region=<region> [--delete] [--dry-run]
     run.py ec2 --key-name=<key_name> --region=<region> [--delete] [--dry-run]

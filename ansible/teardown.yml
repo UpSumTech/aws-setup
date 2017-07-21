@@ -20,6 +20,10 @@
       tags:
         - bastion
 
+    - role: kms_cmk
+      tags:
+        - kms
+
     - role: security_groups
       tags:
         - sg

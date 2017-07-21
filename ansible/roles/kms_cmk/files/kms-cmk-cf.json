@@ -1,0 +1,140 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates customer master key",
+
+  "Parameters": {
+    "Services": {
+      "Type": "List<String>",
+      "Description": "List of services which are allowed access to the kms master key"
+    }
+  },
+
+  "Resources": {
+    "CMK": {
+      "Type" : "AWS::KMS::Key",
+      "Properties" : {
+        "Description" : "Customer master key",
+        "KeyPolicy" : {
+          "Version": "2012-10-17",
+          "Id": "master-key",
+          "Statement": [
+            {
+              "Sid": "allow-management-of-key-by-superusers",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": [
+                  {"Fn::Join": ["", ["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":user/admin"]]},
+                  {"Fn::Join": ["", ["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":user/superuser"]]}
+                ]
+              },
+              "Action": [
+                "kms:Create*",
+                "kms:Describe*",
+                "kms:Enable*",
+                "kms:List*",
+                "kms:Put*",
+                "kms:Update*",
+                "kms:Revoke*",
+                "kms:Disable*",
+                "kms:Get*",
+                "kms:Delete*",
+                "kms:ScheduleKeyDeletion",
+                "kms:CancelKeyDeletion",
+                "kms:TagResource",
+                "kms:UntagResource"
+              ],
+              "Resource": "*"
+            },
+
+            {
+              "Sid": "allow-use-of-key-by-services-based-roles",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": [
+                  {"Fn::Join": ["", ["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/compute-role"]]}
+                ]
+              },
+              "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+              ],
+              "Resource": "*",
+              "Condition": {
+                "StringEquals": {
+                  "kms:ViaService": [
+                    "ec2.*.amazonaws.com",
+                    "lambda.*.amazonaws.com",
+                    "rds.*.amazonaws.com",
+                    "redshift.*.amazonaws.com",
+                    "s3.*.amazonaws.com",
+                    "sqs.*.amazonaws.com",
+                    "ses.*.amazonaws.com",
+                    "dms.*.amazonaws.com",
+                    "dms.*.amazonaws.com"
+                  ]
+                }
+              }
+            },
+
+            {
+              "Sid": "allow-use-of-key-by-multiple-principals",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": [
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:user/admin", {"Service": {"Fn::Select": ["0", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:user/superuser", {"Service": {"Fn::Select": ["0", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/superuser-${Service}-role", {"Service": {"Fn::Select": ["0", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/developer-${Service}-role", {"Service": {"Fn::Select": ["0", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/superuser-${Service}-role", {"Service": {"Fn::Select": ["1", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/developer-${Service}-role", {"Service": {"Fn::Select": ["1", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/superuser-${Service}-role", {"Service": {"Fn::Select": ["2", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/developer-${Service}-role", {"Service": {"Fn::Select": ["2", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/superuser-${Service}-role", {"Service": {"Fn::Select": ["3", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/developer-${Service}-role", {"Service": {"Fn::Select": ["3", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/superuser-${Service}-role", {"Service": {"Fn::Select": ["4", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/developer-${Service}-role", {"Service": {"Fn::Select": ["4", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/superuser-${Service}-role", {"Service": {"Fn::Select": ["5", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/developer-${Service}-role", {"Service": {"Fn::Select": ["5", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/superuser-${Service}-role", {"Service": {"Fn::Select": ["6", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/developer-${Service}-role", {"Service": {"Fn::Select": ["6", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/superuser-${Service}-role", {"Service": {"Fn::Select": ["7", {"Ref": "Services"}]}}]},
+                  {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/developer-${Service}-role", {"Service": {"Fn::Select": ["7", {"Ref": "Services"}]}}]}
+                ]
+              },
+              "Action": [
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:ReEncrypt*",
+                "kms:GenerateDataKey*",
+                "kms:DescribeKey"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "EndpointAddress": {
+      "Description": "Customer master key",
+      "Value": {"Ref": "CMK"},
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            "-",
+            [
+              { "Ref": "AWS::StackName" },
+              "CMK"
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    stack_name: "{{ instance.name | regex_replace('[_.]', '-') }}-{{ region }}-stack"
+    stack_name: "kms-cmk-stack"
 
 - name: is_stack_present
   shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
@@ -15,16 +15,9 @@
     stack_name: "{{ stack_name }}"
     region: "{{ region }}"
     state: "{{ stack_status }}"
-    template: "roles/rds_with_vpc_and_nat/files/rds-with-vpc-and-nat-cf.json"
+    template: "roles/kms_cmk/files/kms-cmk-cf.json"
     template_parameters:
-      DBClass: "{{ instance.db_class }}"
-      DBEngine: "{{ instance.db_engine }}"
-      DBName: "{{ instance.db_name }}"
-      DBUser: "{{ instance.db_user }}"
-      DBPassword: "{{ instance.db_password }}"
-      AllocatedStorage: "{{ instance.allocated_storage }}"
-      VpcStackName: "vpc-with-nat-{{ region }}-stack"
-      SecurityGroupStackName: "security-groups-{{ region }}-stack"
+      Services: "{{ service_names | join(',') }}"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
