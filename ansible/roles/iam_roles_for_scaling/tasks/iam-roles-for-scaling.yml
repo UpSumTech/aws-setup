@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    stack_name: "kms-cmk-{{ region }}-stack"
+    stack_name: "iam-scaling-roles-for-compute-stack"
 
 - name: is_stack_present
   shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
@@ -15,9 +15,7 @@
     stack_name: "{{ stack_name }}"
     region: "{{ region }}"
     state: "{{ stack_status }}"
-    template: "roles/kms_cmk/files/kms-cmk-cf.json"
-    template_parameters:
-      Services: "{{ service_names | join(',') }}"
+    template: "roles/iam_roles_for_scaling/files/iam-roles-for-scaling-cf.json"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"

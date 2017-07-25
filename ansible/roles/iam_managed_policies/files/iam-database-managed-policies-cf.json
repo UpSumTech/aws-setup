@@ -96,6 +96,34 @@
           "compute-role"
         ]
       }
+    },
+
+    "DynamodbScalingPolicy": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Properties": {
+        "PolicyDocument": {
+          "Version" : "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:DescribeTable",
+                "dynamodb:UpdateTable",
+                "cloudwatch:PutMetricAlarm",
+                "cloudwatch:DescribeAlarms",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:SetAlarmState",
+                "cloudwatch:DeleteAlarms"
+              ],
+              "Resource": "*"
+            }
+          ]
+        },
+
+        "Roles": [
+          "scaling-role"
+        ]
+      }
     }
   }
 }

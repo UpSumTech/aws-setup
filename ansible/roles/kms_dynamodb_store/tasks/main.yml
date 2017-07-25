@@ -1,0 +1,3 @@
+---
+
+- include: kms-dynamodb-store.yml

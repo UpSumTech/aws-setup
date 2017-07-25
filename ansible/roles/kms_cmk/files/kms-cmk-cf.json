@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Creates customer master key",
+  "Description": "Creates customer master key in a region",
 
   "Parameters": {
     "Services": {
@@ -17,7 +17,7 @@
         "Description" : "Customer master key",
         "KeyPolicy" : {
           "Version": "2012-10-17",
-          "Id": "master-key",
+          "Id": {"Fn::Join": ["-", ["kms-master-key", {"Ref": "AWS::Region"}]]},
           "Statement": [
             {
               "Sid": "allow-management-of-key-by-superusers",
@@ -48,7 +48,7 @@
             },
 
             {
-              "Sid": "allow-use-of-key-by-services-based-roles",
+              "Sid": "allow-use-of-key-by-compute-roles",
               "Effect": "Allow",
               "Principal": {
                 "AWS": [
@@ -117,20 +117,30 @@
           ]
         }
       }
+    },
+
+    "CMKAlias": {
+      "Type": "AWS::KMS::Alias",
+      "Properties": {
+        "AliasName": {"Fn::Join": ["-", ["alias/kms-master-key", {"Ref": "AWS::Region"}]]},
+        "TargetKeyId": {"Ref": "CMK"}
+      }
     }
   },
 
   "Outputs": {
-    "EndpointAddress": {
-      "Description": "Customer master key",
-      "Value": {"Ref": "CMK"},
+    "KmsAlias": {
+      "Description": "Customer master key alias",
+      "Value": {"Ref": "CMKAlias"},
       "Export": {
         "Name": {
           "Fn::Join": [
             "-",
             [
-              { "Ref": "AWS::StackName" },
-              "CMK"
+              {"Ref": "AWS::StackName"},
+              "CMK",
+              {"Ref": "AWS::Region"},
+              "Alias"
             ]
           ]
         }

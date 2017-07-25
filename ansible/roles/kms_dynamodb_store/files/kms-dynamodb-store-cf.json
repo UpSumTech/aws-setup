@@ -1,0 +1,90 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates dynamodb to store credentials in a region",
+
+  "Parameters": {
+    "TableName": {
+      "Type": "String",
+      "Description": "Name of the table where to store the encrypted credentials"
+    }
+  },
+
+  "Resources": {
+    "CredStashDDBTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "kms-cred-stash",
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "name",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "version",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "name",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "version",
+            "KeyType": "RANGE"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 5
+        }
+      }
+    },
+    "WriteCapacityScalableTarget": {
+      "Type": "AWS::ApplicationAutoScaling::ScalableTarget",
+      "Properties": {
+        "MaxCapacity": 15,
+        "MinCapacity": 5,
+        "ResourceId": {"Fn::Join": ["/", ["table", {"Ref": "CredStashDDBTable"}]]},
+        "RoleARN": {"Fn::Sub": ["arn:aws:iam::${AWS::AccountId}:role/scaling-role", {}]},
+        "ScalableDimension": "dynamodb:table:WriteCapacityUnits",
+        "ServiceNamespace": "dynamodb"
+      }
+    },
+    "WriteScalingPolicy": {
+      "Type": "AWS::ApplicationAutoScaling::ScalingPolicy",
+      "Properties": {
+        "PolicyName": "WriteAutoScalingPolicy",
+        "PolicyType": "TargetTrackingScaling",
+        "ScalingTargetId": {"Ref": "WriteCapacityScalableTarget"},
+        "TargetTrackingScalingPolicyConfiguration": {
+          "TargetValue": 50.0,
+          "ScaleInCooldown": 60,
+          "ScaleOutCooldown": 60,
+          "PredefinedMetricSpecification": {
+            "PredefinedMetricType": "DynamoDBWriteCapacityUtilization"
+          }
+        }
+      }
+    }
+  },
+
+  "Outputs": {
+    "DynamodbTable": {
+      "Description": "Cred store dynamodb table",
+      "Value": {"Ref": "CredStashDDBTable"},
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            "-",
+            [
+              {"Ref": "AWS::StackName"},
+              "DynamodbCredStoreTable"
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

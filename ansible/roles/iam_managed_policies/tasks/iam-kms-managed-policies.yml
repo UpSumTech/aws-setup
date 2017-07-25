@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    stack_name: "kms-cmk-{{ region }}-stack"
+    stack_name: "iam-kms-managed-policies-stack"
 
 - name: is_stack_present
   shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
@@ -10,17 +10,17 @@
   register: is_stack_present
   ignore_errors: yes
 
-- name: "{{ stack_name }}"
+- name: "iam-kms-managed-policies-stack"
   cloudformation:
     stack_name: "{{ stack_name }}"
     region: "{{ region }}"
     state: "{{ stack_status }}"
-    template: "roles/kms_cmk/files/kms-cmk-cf.json"
+    template: "roles/iam_managed_policies/files/iam-kms-managed-policies-cf.json"
     template_parameters:
       Services: "{{ service_names | join(',') }}"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
-- name: "collect-{{ stack_name }}"
+- name: "collect-iam-kms-managed-policies-stack"
   cloudformation_facts:
     stack_name: "{{ stack_name }}"
     all_facts: true
@@ -28,5 +28,5 @@
   when: stack_status == "present"
 
 - set_fact:
-    "{{ stack_name | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
+    "iam_kms_managed_policies_facts": "{{ cloudformation }}"
   when: not ansible_check_mode and stack_status == "present"

@@ -20,6 +20,10 @@
       tags:
         - iam
 
+    - role: iam_roles_for_scaling
+      tags:
+        - iam
+
     - role: iam_managed_policies
       tags:
         - iam
@@ -33,6 +37,10 @@
         - sg
 
     - role: kms_cmk
+      tags:
+        - kms
+
+    - role: kms_dynamodb_store
       tags:
         - kms
 

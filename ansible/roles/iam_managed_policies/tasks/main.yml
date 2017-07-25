@@ -4,3 +4,5 @@
   with_items: "{{ service_names }}"
   loop_control:
     loop_var: service
+
+- include: iam-kms-managed-policies.yml

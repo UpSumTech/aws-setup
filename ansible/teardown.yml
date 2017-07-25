@@ -20,6 +20,10 @@
       tags:
         - bastion
 
+    - role: kms_dynamodb_store
+      tags:
+        - kms
+
     - role: kms_cmk
       tags:
         - kms
@@ -33,6 +37,10 @@
         - vpc
 
     - role: iam_managed_policies
+      tags:
+        - iam
+
+    - role: iam_roles_for_scaling
       tags:
         - iam
 
