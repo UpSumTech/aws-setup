@@ -29,6 +29,7 @@ setup_pyenv() {
 
 setup_autoenv() {
   pip install autoenv
+  pip install credstash
   echo "source `which activate.sh`" >> ~/.bashrc
   exec $SHELL
 }

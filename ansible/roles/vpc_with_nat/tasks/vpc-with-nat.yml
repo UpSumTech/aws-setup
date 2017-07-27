@@ -16,6 +16,8 @@
     region: "{{ region }}"
     state: "{{ stack_status }}"
     template: "roles/vpc_with_nat/files/vpc-with-nat-cf.json"
+    template_parameters:
+      NATInstanceType: "micro"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"

@@ -3,20 +3,7 @@
 
   "Description": "Creates VPC with NAT.",
 
-  "Parameters": {
-    "NATInstanceType": {
-      "Description": "EC2 instance type",
-      "Type": "String",
-      "Default": "micro",
-      "AllowedValues": [
-        "micro",
-        "small",
-        "medium"
-      ]
-      ,
-      "ConstraintDescription": "This must be a valid EC2 instance type"
-    }
-  },
+  "Parameters": {},
 
   "Mappings": {
     "VpcNetworkCIDRs": {
@@ -100,32 +87,6 @@
         "PublicSubnet2": "10.30.110.0/24",
         "PrivateSubnet2": "10.30.111.0/24"
       }
-    },
-
-    "AWSClassType2InstanceType": {
-      "micro": {"class": "t2.micro"},
-      "small": {"class": "t2.small"},
-      "medium": {"class": "t2.medium"}
-    },
-
-    "AWSInstanceType2Arch": {
-      "t2.micro"    : { "Arch": "HVM64" },
-      "t2.small"    : { "Arch": "HVM64" },
-      "t2.medium"   : { "Arch": "HVM64" }
-    },
-
-    "AWSRegionArch2NatAMI": {
-      "us-east-1"        : { "HVM64": "ami-258e1f33" },
-      "us-east-2"        : { "HVM64": "ami-07fdd962" },
-      "us-west-1"        : { "HVM64": "ami-004b0f60" },
-      "us-west-2"        : { "HVM64": "ami-0b707a72" },
-      "ca-central-1"     : { "HVM64": "ami-2103be45" },
-      "eu-west-1"        : { "HVM64": "ami-3a849f5c" },
-      "eu-west-2"        : { "HVM64": "ami-141d0970" },
-      "eu-central-1"     : { "HVM64": "ami-0469bb6b" },
-      "ap-southeast-1"   : { "HVM64": "ami-21ba0542" },
-      "ap-southeast-2"   : { "HVM64": "ami-17809174" },
-      "ap-south-1"       : { "HVM64": "ami-7989f616" }
     }
   },
 
@@ -227,58 +188,11 @@
       }
     },
 
-    "NAT1SecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "Allow inbound traffic to the NAT instance 1",
-        "VpcId" : {"Ref": "VPC"},
-        "SecurityGroupIngress": [
-          {"IpProtocol": "-1", "CidrIp": {"Fn::FindInMap": ["VpcSubnetCIDRs", {"Ref": "AWS::Region"}, "PrivateSubnet1"]}}
-        ],
-        "SecurityGroupEgress": [
-          {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "CidrIp": "0.0.0.0/0"},
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": {
-              "Fn::Join": ["-", ["NAT1-instance-security-group", {"Ref": "AWS::StackId"}]]
-            }
-          }
-        ]
-      }
-    },
-
-    "NAT2SecurityGroup": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "Allow inbound traffic to the NAT instances",
-        "VpcId" : {"Ref": "VPC"},
-        "SecurityGroupIngress": [
-          {"IpProtocol": "-1", "CidrIp": {"Fn::FindInMap": ["VpcSubnetCIDRs", {"Ref": "AWS::Region"}, "PrivateSubnet2"]}}
-        ],
-        "SecurityGroupEgress": [
-          {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
-          {"IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "CidrIp": "0.0.0.0/0"},
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": {
-              "Fn::Join": ["-", ["NAT2-instance-security-group", {"Ref": "AWS::StackId"}]]
-            }
-          }
-        ]
-      }
-    },
-
     "NatIPAddress1": {
       "Type": "AWS::EC2::EIP",
       "DependsOn": "InternetGatewayAssociation",
       "Properties": {
-        "Domain": "vpc",
-        "InstanceId": {"Ref": "NAT1"}
+        "Domain": "vpc"
       }
     },
 
@@ -286,72 +200,23 @@
       "Type": "AWS::EC2::EIP",
       "DependsOn": "InternetGatewayAssociation",
       "Properties": {
-        "Domain": "vpc",
-        "InstanceId": {"Ref": "NAT2"}
+        "Domain": "vpc"
       }
     },
 
     "NAT1": {
-      "Type": "AWS::EC2::Instance",
-      "DependsOn": "InternetGatewayAssociation",
+      "Type": "AWS::EC2::NatGateway",
       "Properties": {
-        "ImageId": {
-          "Fn::FindInMap": [
-            "AWSRegionArch2NatAMI",
-            {"Ref": "AWS::Region"},
-            {
-              "Fn::FindInMap": [
-                "AWSInstanceType2Arch",
-                {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "NATInstanceType"}, "class"]},
-                "Arch"
-              ]
-            }
-          ]
-        },
-        "InstanceType": {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "NATInstanceType"}, "class"]},
-        "Tags": [{"Key": "Name", "Value": "NAT1"}],
-        "NetworkInterfaces": [
-          {
-            "GroupSet": [{"Ref": "NAT1SecurityGroup"}],
-            "AssociatePublicIpAddress": "true",
-            "DeviceIndex": "0",
-            "DeleteOnTermination": "true",
-            "SubnetId": {"Ref": "PublicSubnet1"}
-          }
-        ],
-        "SourceDestCheck": "false"
+        "AllocationId": { "Fn::GetAtt": [ "NatIPAddress1", "AllocationId" ] },
+        "SubnetId": { "Ref": "PublicSubnet1" }
       }
     },
 
     "NAT2": {
-      "Type": "AWS::EC2::Instance",
-      "DependsOn": "InternetGatewayAssociation",
+      "Type": "AWS::EC2::NatGateway",
       "Properties": {
-        "ImageId": {
-          "Fn::FindInMap": [
-            "AWSRegionArch2NatAMI",
-            {"Ref": "AWS::Region"},
-            {
-              "Fn::FindInMap": [
-                "AWSInstanceType2Arch",
-                {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "NATInstanceType"}, "class"]},
-                "Arch"
-              ]
-            }
-          ]
-        },
-        "InstanceType": {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "NATInstanceType"}, "class"]},
-        "Tags": [{"Key": "Name", "Value": "NAT2"}],
-        "NetworkInterfaces": [
-          {
-            "GroupSet": [{"Ref": "NAT2SecurityGroup"}],
-            "AssociatePublicIpAddress": "true",
-            "DeviceIndex": "0",
-            "DeleteOnTermination": "true",
-            "SubnetId": {"Ref": "PublicSubnet2"}
-          }
-        ],
-        "SourceDestCheck": "false"
+        "AllocationId": { "Fn::GetAtt": [ "NatIPAddress2", "AllocationId" ] },
+        "SubnetId": { "Ref": "PublicSubnet2" }
       }
     },
 
@@ -364,7 +229,6 @@
 
     "PublicSubnetRoute": {
       "Type": "AWS::EC2::Route",
-      "DependsOn": "InternetGatewayAssociation",
       "Properties": {
         "RouteTableId": { "Ref": "PublicSubnetRouteTable" },
         "DestinationCidrBlock": "0.0.0.0/0",
@@ -374,7 +238,6 @@
 
     "PublicSubnetRouteTableAssociation1": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "DependsOn": "PublicSubnetRouteTable",
       "Properties": {
         "SubnetId": { "Ref": "PublicSubnet1" },
         "RouteTableId": { "Ref": "PublicSubnetRouteTable" }
@@ -383,7 +246,6 @@
 
     "PublicSubnetRouteTableAssociation2": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "DependsOn": "PublicSubnetRouteTable",
       "Properties": {
         "SubnetId": { "Ref": "PublicSubnet2" },
         "RouteTableId": { "Ref": "PublicSubnetRouteTable" }
@@ -406,27 +268,24 @@
 
     "PrivateSubnetRoute1": {
       "Type": "AWS::EC2::Route",
-      "DependsOn": "NAT1",
       "Properties": {
         "RouteTableId": { "Ref": "PrivateSubnetRouteTable1" },
         "DestinationCidrBlock": "0.0.0.0/0",
-        "InstanceId": { "Ref": "NAT1" }
+        "NatGatewayId": { "Ref": "NAT1" }
       }
     },
 
     "PrivateSubnetRoute2": {
       "Type": "AWS::EC2::Route",
-      "DependsOn": "NAT2",
       "Properties": {
         "RouteTableId": { "Ref": "PrivateSubnetRouteTable2" },
         "DestinationCidrBlock": "0.0.0.0/0",
-        "InstanceId": { "Ref": "NAT2" }
+        "NatGatewayId": { "Ref": "NAT2" }
       }
     },
 
     "PrivateSubnetRouteTableAssociation1": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "DependsOn": "PrivateSubnetRouteTable1",
       "Properties": {
         "SubnetId": { "Ref": "PrivateSubnet1" },
         "RouteTableId": { "Ref": "PrivateSubnetRouteTable1" }
@@ -435,7 +294,6 @@
 
     "PrivateSubnetRouteTableAssociation2": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
-      "DependsOn": "PrivateSubnetRouteTable2",
       "Properties": {
         "SubnetId": { "Ref": "PrivateSubnet2" },
         "RouteTableId": { "Ref": "PrivateSubnetRouteTable2" }

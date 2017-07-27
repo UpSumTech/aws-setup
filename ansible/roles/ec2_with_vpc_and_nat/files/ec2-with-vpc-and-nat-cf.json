@@ -310,13 +310,13 @@
         "InstanceInitiatedShutdownBehavior": "stop",
         "Tags": [
           {
-            "Key": "name",
+            "Key": "Name",
             "Value": {
               "Fn::Join" : [
                 "-",
                 [
-                  { "Ref": "Name" },
-                  { "Ref" : "AWS::StackId" }
+                  "Private",
+                  { "Ref" : "SubnetType" }
                 ]
               ]
             }
