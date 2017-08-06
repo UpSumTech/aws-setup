@@ -23,7 +23,7 @@
                 "kms:GenerateDataKey"
               ],
               "Effect": "Allow",
-              "Resource": {"Fn::Sub": ["arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/kms-master-key-${AWS::Region}", {}]}
+              "Resource": {"Fn::Sub": ["arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/*", {}]}
             },
             {
               "Action": [
@@ -53,7 +53,7 @@
                 "kms:Decrypt"
               ],
               "Effect": "Allow",
-              "Resource": {"Fn::Sub": ["arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/kms-master-key-${AWS::Region}", {}]}
+              "Resource": {"Fn::Sub": ["arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/*", {}]}
             },
             {
               "Action": [

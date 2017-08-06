@@ -62,22 +62,7 @@
                 "kms:GenerateDataKey*",
                 "kms:DescribeKey"
               ],
-              "Resource": "*",
-              "Condition": {
-                "StringEquals": {
-                  "kms:ViaService": [
-                    "ec2.*.amazonaws.com",
-                    "lambda.*.amazonaws.com",
-                    "rds.*.amazonaws.com",
-                    "redshift.*.amazonaws.com",
-                    "s3.*.amazonaws.com",
-                    "sqs.*.amazonaws.com",
-                    "ses.*.amazonaws.com",
-                    "dms.*.amazonaws.com",
-                    "dms.*.amazonaws.com"
-                  ]
-                }
-              }
+              "Resource": "*"
             },
 
             {
