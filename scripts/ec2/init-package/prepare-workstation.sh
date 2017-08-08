@@ -33,12 +33,12 @@ upgrade_pip_packages() {
 setup_ssh_keys_and_tokens() {
   if [[ ! -f ~/.ssh/id_rsa && ! -f ~/.ssh/id_rsa.pub ]]; then
     ssh-keygen -t rsa -N "" -b 4096 -C "ssh private key" -f ~/.ssh/id_rsa
-    touch ~/.ssh/authorized_keys
     chmod 600 ~/.ssh/id_rsa
     chmod 600 ~/.ssh/id_rsa.pub
   fi
-  cat ~/.ssh/authorized_keys | grep "$(cat ~/.ssh/authorized_keys)" \
-    || cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+  touch ~/.ssh/authorized_keys
+  cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+  chmod 600 ~/.ssh/authorized_keys
   echo "Updated ssh"
 }
 
