@@ -13,6 +13,7 @@ trap "echo Cleaning up tmp dir; rm -rf "$TMPDIR";" EXIT
 INIT_FILES=( \
   "setup-users-groups.sh" \
   "harden-os.sh" \
+  "prepare-workstation.sh",
   "get-os-info.sh" \
   "fetch-service-artifacts.sh" \
   "get-initd-scripts.sh" \
@@ -27,7 +28,7 @@ INIT_PACKAGE_FILE_NAME="${INIT_PACKAGE_NAME}.zip"
 ################### Helper functions ####################
 #########################################################
 export PID="$$" # Get parent pid so that you can kill the main proc from subshells
-err() {
+die() {
   echo >&2 "Error : $@"
   kill -s TERM $PID
   exit 1
