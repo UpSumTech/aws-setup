@@ -124,7 +124,7 @@
       "Metadata": {
         "AWS::CloudFormation::Init" : {
           "configSets": {
-            "ConfigureFetchExec" : [ "InstallDeps", "Configure", "Fetch", "Exec" ]
+            "ConfigureFetchExec" : [ "InstallDeps", "Configure", "Fetch", "Exec", "Ready" ]
           },
 
           "InstallDeps": {
@@ -223,6 +223,28 @@
                 "ignoreErrors": "false"
               }
             }
+          },
+
+          "Ready": {
+            "services": {
+              "0_init_cfn_hup": {
+                "cfn-hup" : {
+                  "enabled": "true",
+                  "ensureRunning": "true",
+                  "files": [
+                    "/etc/cfn/cfn-hup.conf",
+                    "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
+                  ]
+                }
+              },
+
+              "1_docker": {
+                "docker" : {
+                  "enabled": "true",
+                  "ensureRunning": "true"
+                }
+              }
+            }
           }
         }
       },
@@ -253,10 +275,10 @@
                 "         --region ", { "Ref" : "AWS::Region" }, "\n",
 
                 "# Signal the output status from cfn-init\n",
-                "/usr/local/bin/cfn-signal -e $? ",
-                "         --stack ", { "Ref" : "AWS::StackName" },
-                "         --resource EC2Instance ",
-                "         --region ", { "Ref" : "AWS::Region" }, "\n"
+                "/opt/aws/bin/cfn-signal -e $? ",
+                "         --stack ", {"Ref": "AWS::StackName"},
+                "         --resource EC2Instance",
+                "         --region ", {"Ref": "AWS::Region"}, "\n"
               ]
             ]
           }
@@ -324,6 +346,7 @@
           }
         ]
       }
+
     },
 
     "IPAddress": {

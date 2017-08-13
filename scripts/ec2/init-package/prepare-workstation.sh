@@ -39,6 +39,7 @@ setup_ssh_keys_and_tokens() {
   touch ~/.ssh/authorized_keys
   cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
   chmod 600 ~/.ssh/authorized_keys
+  ssh-keyscan -H localhost >> ~/.ssh/known_hosts
   echo "Updated ssh"
 }
 
