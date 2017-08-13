@@ -11,13 +11,10 @@ TMPDIR="$(mktemp -d "/tmp/ec2-init-scripts.XXXXXXX")"
 trap "echo Cleaning up tmp dir; rm -rf "$TMPDIR";" EXIT
 
 INIT_FILES=( \
-  "setup-users-groups.sh" \
   "harden-os.sh" \
   "prepare-workstation.sh",
   "get-os-info.sh" \
-  "fetch-service-artifacts.sh" \
   "get-initd-scripts.sh" \
-  "start-services.sh" \
 )
 S3_INIT_SCRIPTS_BUCKET=
 S3_INIT_PACKAGE_VERSION=
