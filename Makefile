@@ -56,6 +56,11 @@ ELB_TASK_FILES := $(call rfind,ansible/roles,elb*/tasks/[^.]*.yml)
 ELB_VAR_FILES := $(call rfind,ansible/roles,elb*/vars/[^.]*.yml) \
 	$(call rfind,ansible/group_vars, *)
 
+ROUTE53_CF_FILES := $(call rfind,ansible/roles,route53*/files/[^.]*.json)
+ROUTE53_TASK_FILES := $(call rfind,ansible/roles,route53*/tasks/[^.]*.yml)
+ROUTE53_VAR_FILES := $(call rfind,ansible/roles,route53*/vars/[^.]*.yml) \
+	$(call rfind,ansible/group_vars, *)
+
 DEPS_STATEFILE = .make/done_deps
 
 OS := $(call get_os)
@@ -179,6 +184,18 @@ build_elb: test_elb $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES) ansible/b
 teardown_elb: test_elb $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES) ansible/teardown.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
 	$(AT)./bin/run.py elb --region=$(AWS_REGION) --delete
+
+test_route53: deps $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES)
+	$(AT)echo $(ROUTE53_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
+	$(AT)./bin/run.py route53 --region=us-west-2 --dry-run
+
+build_route53: test_route53 $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES) ansible/build.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py route53 --region=$(AWS_REGION)
+
+teardown_route53: test_route53 $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES) ansible/teardown.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py route53 --region=$(AWS_REGION) --delete
 
 clean:
 	$(AT)rm -rf .make

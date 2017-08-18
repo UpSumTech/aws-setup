@@ -59,3 +59,7 @@
     - role: elb_with_vpc
       tags:
         - elb
+
+    - role: route53
+      tags:
+        - route53

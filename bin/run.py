@@ -131,6 +131,7 @@ Usage:
     run.py rds --db-name=<db_name> --db-user=<db_user> --db-password=<db_password> --db-engine=<db_engine> --region=<region> [--delete] [--dry-run]
     run.py ec2 --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     run.py elb --region=<region> [--delete] [--dry-run]
+    run.py route53 --region=<region> [--delete] [--dry-run]
     run.py (-h | --help)
 
 Options:

@@ -4,6 +4,10 @@
   gather_facts: yes
   connection: local
   roles:
+    - role: route53
+      tags:
+        - route53
+
     - role: elb_with_vpc
       tags:
         - elb

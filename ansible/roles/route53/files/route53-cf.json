@@ -1,0 +1,68 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates route53 hosted zone and records",
+
+  "Parameters": {
+    "DomainName": {
+      "Description": "The domain name",
+      "Type": "String"
+    },
+
+    "ELBStackName": {
+      "Description": "The name of the ELB stack",
+      "Type": "String",
+      "ConstraintDescription": "This must be existing stack names for elb"
+    }
+  },
+
+  "Resources": {
+    "DomainHostedZone": {
+      "Type": "AWS::Route53::HostedZone",
+      "Properties": {
+        "Name": {"Ref": "DomainName"},
+        "HostedZoneConfig": {"Comment": "Hosted domain for site"}
+      }
+    },
+
+    "DomainRecordGroups": {
+      "Type": "AWS::Route53::RecordSetGroup",
+      "Properties": {
+        "Comment": "Record groups for hosted domain",
+        "HostedZoneId": {"Ref": "DomainHostedZone"},
+        "RecordSets": [
+          {
+            "Name": {"Fn::Join": [".", ["demo", {"Ref": "DomainName"}]]},
+            "Type": "A",
+            "AliasTarget": {
+              "HostedZoneId": {
+                "Fn::ImportValue": "elb-with-vpc-us-west-2-stack-ElasticLoadBalancerHostedZoneID"
+              },
+              "DNSName": {
+                "Fn::ImportValue": "elb-with-vpc-us-west-2-stack-ElasticLoadBalancerDNS"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+
+  "Outputs": {
+    "DomainHostedZoneId": {
+      "Description": "Domain hosted zone id",
+      "Value": {"Ref": "DomainHostedZone"},
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            "-",
+            [
+              { "Ref": "AWS::StackName" },
+              "DomainHostedZoneId"
+            ]
+          ]
+        }
+      }
+    }
+  }
+}
