@@ -17,9 +17,9 @@
     },
 
     "StackNamesForEC2Instances": {
-      "Description": "The security group stack name",
+      "Description": "The ec2 instance stack names",
       "Type": "List<String>",
-      "ConstraintDescription": "This must be an existing stack name for security groups"
+      "ConstraintDescription": "This must be existing stack names for ec2 instances"
     }
   },
 
@@ -139,7 +139,7 @@
 
     "ELBHostedZoneId": {
       "Description": "Elastic loadbalancer hosted zone name",
-      "Value": {"Fn::GetAttr": ["CanonicalHostedZoneNameID", {"Ref": "ElasticLoadBalancer"}]},
+      "Value": {"Fn::GetAtt": ["ElasticLoadBalancer", "CanonicalHostedZoneNameID"]},
       "Export": {
         "Name": {
           "Fn::Join": [
@@ -155,7 +155,7 @@
 
     "ELBDns": {
       "Description": "Elastic loadbalancer id",
-      "Value": {"Fn::GetAttr": ["DNSName", {"Ref": "ElasticLoadBalancer"}]},
+      "Value": {"Fn::GetAtt": ["ElasticLoadBalancer", "DNSName"]},
       "Export": {
         "Name": {
           "Fn::Join": [
