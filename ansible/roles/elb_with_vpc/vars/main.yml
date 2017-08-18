@@ -1,1 +1,5 @@
 ---
+
+instances:
+  - "ec2-vpc-with-nat-private1-subnet-{{ region }}-stack"
+  - "ec2-vpc-with-nat-private2-subnet-{{ region }}-stack"

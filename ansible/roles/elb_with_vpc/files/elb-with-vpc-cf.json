@@ -14,6 +14,12 @@
       "Description": "The security group stack name",
       "Type": "String",
       "ConstraintDescription": "This must be an existing stack name for security groups"
+    },
+
+    "StackNamesForEC2Instances": {
+      "Description": "The security group stack name",
+      "Type": "List<String>",
+      "ConstraintDescription": "This must be an existing stack name for security groups"
     }
   },
 
@@ -33,7 +39,29 @@
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
       "Properties": {
         "LoadBalancerName": {"Fn::Join": ["-", ["elb", "webapp", { "Ref": "AWS::Region" } ]]},
-        "Instances": ["i-0dddb40a8a70d06a4", "i-0dab7f70629981963"],
+        "Instances": [
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": [
+                "${StackName}-InstanceId",
+                {
+                  "StackName": {"Fn::Select": ["0", {"Ref": "StackNamesForEC2Instances"}]}
+                }
+              ]
+            }
+          },
+
+          {
+            "Fn::ImportValue": {
+              "Fn::Sub": [
+                "${StackName}-InstanceId",
+                {
+                  "StackName": {"Fn::Select": ["1", {"Ref": "StackNamesForEC2Instances"}]}
+                }
+              ]
+            }
+          }
+        ],
         "SecurityGroups": [
           {
             "Fn::ImportValue": {
@@ -47,6 +75,7 @@
             }
           }
         ],
+
         "Subnets": [
           {
             "Fn::ImportValue": {
@@ -71,6 +100,7 @@
             }
           }
         ],
+
         "Listeners": [
           {
             "LoadBalancerPort": "80",
@@ -78,6 +108,7 @@
             "Protocol": "HTTP"
           }
         ],
+
         "HealthCheck": {
           "Target": { "Fn::Join": [ "", ["HTTP:80", "/"]]},
           "HealthyThreshold": "5",
@@ -90,7 +121,7 @@
   },
 
   "Outputs": {
-    "EndpointAddress": {
+    "ELBId": {
       "Description": "Elastic loadbalancer id",
       "Value": {"Ref": "ElasticLoadBalancer"},
       "Export": {
@@ -99,7 +130,39 @@
             "-",
             [
               { "Ref": "AWS::StackName" },
-              "ElasticLoadBalancer"
+              "ElasticLoadBalancerId"
+            ]
+          ]
+        }
+      }
+    },
+
+    "ELBHostedZoneId": {
+      "Description": "Elastic loadbalancer hosted zone name",
+      "Value": {"Fn::GetAttr": ["CanonicalHostedZoneNameID", {"Ref": "ElasticLoadBalancer"}]},
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            "-",
+            [
+              { "Ref": "AWS::StackName" },
+              "ElasticLoadBalancerHostedZoneID"
+            ]
+          ]
+        }
+      }
+    },
+
+    "ELBDns": {
+      "Description": "Elastic loadbalancer id",
+      "Value": {"Fn::GetAttr": ["DNSName", {"Ref": "ElasticLoadBalancer"}]},
+      "Export": {
+        "Name": {
+          "Fn::Join": [
+            "-",
+            [
+              { "Ref": "AWS::StackName" },
+              "ElasticLoadBalancerDNS"
             ]
           ]
         }

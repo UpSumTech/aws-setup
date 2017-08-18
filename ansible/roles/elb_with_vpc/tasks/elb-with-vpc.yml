@@ -19,6 +19,7 @@
     template_parameters:
       VpcStackName: "vpc-with-nat-{{ region }}-stack"
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
+      StackNamesForEC2Instances: "{{ instances | join(',') }}"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"

@@ -227,7 +227,7 @@
 
           "Ready": {
             "services": {
-              "0_init_cfn_hup": {
+              "sysvinit": {
                 "cfn-hup" : {
                   "enabled": "true",
                   "ensureRunning": "true",
@@ -235,11 +235,9 @@
                     "/etc/cfn/cfn-hup.conf",
                     "/etc/cfn/hooks.d/cfn-auto-reloader.conf"
                   ]
-                }
-              },
+                },
 
-              "1_docker": {
-                "docker" : {
+                "docker": {
                   "enabled": "true",
                   "ensureRunning": "true"
                 }
@@ -346,7 +344,6 @@
           }
         ]
       }
-
     },
 
     "IPAddress": {
