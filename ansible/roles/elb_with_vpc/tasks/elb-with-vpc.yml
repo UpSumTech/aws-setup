@@ -17,7 +17,7 @@
     state: "{{ stack_status }}"
     template: "roles/elb_with_vpc/files/elb-with-vpc-cf.json"
     template_parameters:
-      VpcStackName: "vpc-with-nat-{{ region }}-stack"
+      VpcStackName: "vpc-{{ region }}-stack"
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
       StackNamesForEC2Instances: "{{ instances | join(',') }}"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)

@@ -23,7 +23,7 @@
       DBUser: "{{ instance.db_user }}"
       DBPassword: "{{ instance.db_password }}"
       AllocatedStorage: "{{ instance.allocated_storage }}"
-      VpcStackName: "vpc-with-nat-{{ region }}-stack"
+      VpcStackName: "vpc-{{ region }}-stack"
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 

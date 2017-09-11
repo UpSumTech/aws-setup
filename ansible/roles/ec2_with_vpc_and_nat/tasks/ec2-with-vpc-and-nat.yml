@@ -35,7 +35,7 @@
       Name: "{{ instance.name }}"
       KeyName: "{{ key_name }}"
       InstanceType: "{{ instance.type }}"
-      VpcStackName: "vpc-with-nat-{{ region }}-stack"
+      VpcStackName: "vpc-{{ region }}-stack"
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
       SubnetType: "{{ instance.subnet }}"
       EC2InitScriptS3Bucket: "ec2-init-scripts"
