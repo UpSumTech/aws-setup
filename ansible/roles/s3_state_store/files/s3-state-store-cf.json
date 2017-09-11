@@ -1,0 +1,22 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates s3 bucket for storing k8s cluster state",
+
+  "Parameters": {
+    "BucketName": {
+      "Description": "The name of the bucket",
+      "Type": "String"
+    }
+  },
+
+  "Resources": {
+    "K8sStateStore": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {"Ref": "BucketName"}
+        "AccessControl": "BucketOwnerFullControl"
+      }
+    }
+  }
+}

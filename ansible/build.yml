@@ -28,13 +28,17 @@
       tags:
         - iam
 
-    - role: vpc_with_nat
+    - role: vpc
       tags:
         - vpc
 
     - role: security_groups
       tags:
         - sg
+
+    - role: nat_routing
+      tags:
+        - nat
 
     - role: kms_cmk
       tags:

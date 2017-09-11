@@ -1,7 +1,7 @@
 ---
 
 - set_fact:
-    stack_name: "security-groups-{{ region }}-stack"
+    stack_name: "s3-state-store-{{ region }}-stack"
 
 - name: is_stack_present
   shell: aws cloudformation describe-stacks --region "{{ region }}" --stack-name "{{ stack_name }}"
@@ -15,9 +15,9 @@
     stack_name: "{{ stack_name }}"
     region: "{{ region }}"
     state: "{{ stack_status }}"
-    template: "roles/security_groups/files/security-groups-cf.json"
+    template: "roles/s3_state_store/files/s3-state-store-cf.json"
     template_parameters:
-      VpcStackName: "vpc-{{ region }}-stack"
+      BucketName: "k8s-state-store-{{ region }}-stack"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
@@ -28,5 +28,5 @@
   when: stack_status == "present"
 
 - set_fact:
-    "security_groups_{{ region | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
+    "{{ stack_name | regex_replace('[-.]', '_') }}_facts": "{{ cloudformation }}"
   when: not ansible_check_mode and stack_status == "present"

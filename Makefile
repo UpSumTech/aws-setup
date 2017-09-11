@@ -26,6 +26,11 @@ VPC_TASK_FILES := $(call rfind,ansible/roles,vpc*/tasks/[^.]*.yml)
 VPC_VAR_FILES := $(call rfind,ansible/roles,vpc*/vars/[^.]*.yml) \
 	$(call rfind,ansible/group_vars, *)
 
+NAT_CF_FILES := $(call rfind,ansible/roles,nat_routing*/files/[^.]*.json)
+NAT_TASK_FILES := $(call rfind,ansible/roles,nat_routing*/tasks/[^.]*.yml)
+NAT_VAR_FILES := $(call rfind,ansible/roles,nat_routing*/vars/[^.]*.yml) \
+	$(call rfind,ansible/group_vars, *)
+
 SG_CF_FILES := $(call rfind,ansible/roles,security*/files/[^.]*.json)
 SG_TASK_FILES := $(call rfind,ansible/roles,security*/tasks/[^.]*.yml)
 SG_VAR_FILES := $(call rfind,ansible/roles,security*/vars/[^.]*.yml) \
@@ -124,6 +129,18 @@ build_sg: test_sg $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/build.
 teardown_sg: test_sg $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/teardown.yml
 	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
 	$(AT)./bin/run.py sg --region=$(AWS_REGION) --delete
+
+test_nat: deps $(NAT_CF_FILES) $(NAT_VAR_FILES) $(NAT_TASK_FILES)
+	$(AT)echo $(NAT_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
+	$(AT)./bin/run.py nat --region=us-west-2 --key-name=noop --dry-run
+
+build_nat: test_nat $(NAT_CF_FILES) $(NAT_VAR_FILES) $(NAT_TASK_FILES) ansible/build.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py nat --region=$(AWS_REGION) --key-name=$(KEY_NAME)
+
+teardown_nat: test_nat $(NAT_CF_FILES) $(NAT_VAR_FILES) $(NAT_TASK_FILES) ansible/teardown.yml
+	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)./bin/run.py nat --region=$(AWS_REGION) --key-name=$(KEY_NAME) --delete
 
 test_kms: deps $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES)
 	$(AT)echo $(KMS_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .

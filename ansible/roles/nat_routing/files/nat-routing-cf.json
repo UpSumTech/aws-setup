@@ -1,0 +1,291 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates NAT in VPC",
+
+  "Parameters": {
+    "NATInstanceType": {
+      "Description": "EC2 instance type",
+      "Type": "String",
+      "Default": "micro",
+      "AllowedValues": [
+        "micro",
+        "small",
+        "medium"
+      ]
+      ,
+      "ConstraintDescription": "This must be a valid EC2 instance type"
+    },
+
+    "KeyName": {
+      "Description": "EC2 KeyPair to enable SSH access",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "This must be an existing EC2 KeyPair"
+    },
+
+    "SecurityGroupStackName": {
+      "Description": "The security group stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing stack name for security groups"
+    },
+
+    "VpcStackName": {
+      "Description": "The vpc stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing stack name for vpc"
+    }
+  },
+
+  "Mappings": {
+    "AWSClassType2InstanceType": {
+      "micro": {"class": "t2.micro"},
+      "small": {"class": "t2.small"},
+      "medium": {"class": "t2.medium"}
+    },
+
+    "AWSInstanceType2Arch": {
+      "t2.micro"    : { "Arch": "HVM64" },
+      "t2.small"    : { "Arch": "HVM64" },
+      "t2.medium"   : { "Arch": "HVM64" }
+    },
+
+    "AWSRegionArch2NatAMI": {
+      "us-east-1"        : { "HVM64": "ami-258e1f33" },
+      "us-east-2"        : { "HVM64": "ami-07fdd962" },
+      "us-west-1"        : { "HVM64": "ami-004b0f60" },
+      "us-west-2"        : { "HVM64": "ami-0b707a72" },
+      "ca-central-1"     : { "HVM64": "ami-2103be45" },
+      "eu-west-1"        : { "HVM64": "ami-3a849f5c" },
+      "eu-west-2"        : { "HVM64": "ami-141d0970" },
+      "eu-central-1"     : { "HVM64": "ami-0469bb6b" },
+      "ap-southeast-1"   : { "HVM64": "ami-21ba0542" },
+      "ap-southeast-2"   : { "HVM64": "ami-17809174" },
+      "ap-south-1"       : { "HVM64": "ami-7989f616" }
+    }
+  },
+
+  "Resources": {
+    "NatIPAddress1": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "InstanceId": {"Ref": "NAT1"}
+      }
+    },
+
+    "NatIPAddress2": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc",
+        "InstanceId": {"Ref": "NAT2"}
+      }
+    },
+
+    "NAT1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2NatAMI",
+            {"Ref": "AWS::Region"},
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "NATInstanceType"}, "class"]},
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType": {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "NATInstanceType"}, "class"]},
+        "KeyName": { "Ref": "KeyName" },
+        "Tags": [{"Key": "Name", "Value": "NAT1"}],
+        "NetworkInterfaces": [
+          {
+            "GroupSet": [
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": [
+                    "${StackName}-${NATSecurityGroupIdImportName}",
+                    {
+                      "StackName": {"Ref": "SecurityGroupStackName"},
+                      "NATSecurityGroupIdImportName": "NATSecurityGroupId"
+                    }
+                  ]
+                }
+              }
+            ],
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "DeleteOnTermination": "true",
+            "SubnetId": {"Fn::ImportValue": {"Fn::Sub": "${VpcStackName}-PublicSubnetId1"}}
+          }
+        ],
+        "SourceDestCheck": "false"
+      }
+    },
+
+    "NAT2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2NatAMI",
+            {"Ref": "AWS::Region"},
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch",
+                {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "NATInstanceType"}, "class"]},
+                "Arch"
+              ]
+            }
+          ]
+        },
+        "InstanceType": {"Fn::FindInMap": ["AWSClassType2InstanceType", {"Ref": "NATInstanceType"}, "class"]},
+        "KeyName": { "Ref": "KeyName" },
+        "Tags": [{"Key": "Name", "Value": "NAT2"}],
+        "NetworkInterfaces": [
+          {
+            "GroupSet": [
+              {
+                "Fn::ImportValue": {
+                  "Fn::Sub": [
+                    "${StackName}-${NATSecurityGroupIdImportName}",
+                    {
+                      "StackName": {"Ref": "SecurityGroupStackName"},
+                      "NATSecurityGroupIdImportName": "NATSecurityGroupId"
+                    }
+                  ]
+                }
+              }
+            ],
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": "0",
+            "DeleteOnTermination": "true",
+            "SubnetId": {"Fn::ImportValue": {"Fn::Sub": "${VpcStackName}-PublicSubnetId2"}}
+          }
+        ],
+        "SourceDestCheck": "false"
+      }
+    },
+
+    "PrivateSubnetRoute1": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "NAT1",
+      "Properties": {
+        "RouteTableId": {"Fn::ImportValue": {"Fn::Sub": "${VpcStackName}-PrivateSubnetRouteTable1" } },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "InstanceId": { "Ref": "NAT1" }
+      }
+    },
+
+    "PrivateSubnetRoute2": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "NAT2",
+      "Properties": {
+        "RouteTableId": {"Fn::ImportValue": {"Fn::Sub": "${VpcStackName}-PrivateSubnetRouteTable2" } },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "InstanceId": { "Ref": "NAT2" }
+      }
+    }
+
+  },
+
+  "Outputs": {
+    "InstanceId": {
+      "Description": "InstanceId of the newly created NAT1 instance",
+      "Value": { "Ref": "NAT1" },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstanceId",
+            ]
+          ]
+        }
+      }
+    },
+
+    "AZ": {
+      "Description": "Availability Zone of the newly created NAT1 instance",
+      "Value": { "Fn::GetAtt": [ "NAT1", "AvailabilityZone" ] },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstanceAZ",
+            ]
+          ]
+        }
+      }
+    },
+
+    "PublicIP": {
+      "Description": "Public IP address of the newly created NAT1 instance",
+      "Value": { "Fn::GetAtt": [ "NAT1", "PublicIp" ] },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstancePublicIP",
+            ]
+          ]
+        }
+      }
+    },
+
+    "InstanceId": {
+      "Description": "InstanceId of the newly created NAT2 instance",
+      "Value": { "Ref": "NAT2" },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstanceId",
+            ]
+          ]
+        }
+      }
+    },
+
+    "AZ": {
+      "Description": "Availability Zone of the newly created NAT2 instance",
+      "Value": { "Fn::GetAtt": [ "NAT2", "AvailabilityZone" ] },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstanceAZ",
+            ]
+          ]
+        }
+      }
+    },
+
+    "PublicIP": {
+      "Description": "Public IP address of the newly created NAT2 instance",
+      "Value": { "Fn::GetAtt": [ "NAT2", "PublicIp" ] },
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "InstancePublicIP",
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

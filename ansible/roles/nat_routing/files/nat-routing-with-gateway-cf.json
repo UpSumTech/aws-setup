@@ -1,0 +1,84 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Creates NAT gateway in VPC",
+
+  "Parameters": {
+    "VpcStackName": {
+      "Description": "The vpc stack name",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing stack name for vpc"
+    }
+  },
+
+  "Resources": {
+    "NatIPAddress1": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+
+    "NatIPAddress2": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      }
+    },
+
+    "NAT1": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": { "Fn::GetAtt": [ "NatIPAddress1", "AllocationId" ] },
+        "SubnetId": {"Fn::ImportValue": {"Fn::Sub": "${VpcStackName}-PublicSubnetId1"}}
+      }
+    },
+
+    "NAT2": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": { "Fn::GetAtt": [ "NatIPAddress2", "AllocationId" ] },
+        "SubnetId": {"Fn::ImportValue": {"Fn::Sub": "${VpcStackName}-PublicSubnetId2"}}
+      }
+    },
+
+    "PrivateSubnetRoute1": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "NAT1",
+      "Properties": {
+        "RouteTableId": {"Fn::ImportValue": {"Fn::Sub": "${VpcStackName}-PrivateSubnetRouteTableId1" } },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": { "Ref": "NAT1" }
+      }
+    },
+
+    "PrivateSubnetRoute2": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "NAT1",
+      "Properties": {
+        "RouteTableId": {"Fn::ImportValue": {"Fn::Sub": "${VpcStackName}-PrivateSubnetRouteTableId2" } },
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": { "Ref": "NAT2" }
+      }
+    }
+
+  },
+
+  "Outputs": {
+    "VpcId": {
+      "Description": "The vpc with nat id",
+      "Value": {"Ref": "VPC"},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "VpcId",
+            ]
+          ]
+        }
+      }
+    }
+  }
+}

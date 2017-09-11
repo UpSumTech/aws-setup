@@ -12,25 +12,6 @@
   },
 
   "Resources": {
-    "BastionSecurityGroup" : {
-      "Type" : "AWS::EC2::SecurityGroup",
-      "Properties" : {
-        "GroupDescription" : "Enable ssh access to the bastion host",
-        "VpcId" : { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } },
-        "SecurityGroupIngress" : [
-          { "IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : "0.0.0.0/0"}
-        ],
-        "Tags": [
-          {
-            "Key": "Name",
-            "Value": {
-              "Fn::Join": [ "-", [ "bastion-host-in-public-subnet-security-group", { "Ref": "AWS::StackId" } ] ]
-            }
-          }
-        ]
-      }
-    },
-
     "LoadBalancerSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
@@ -44,6 +25,25 @@
             "Key": "Name",
             "Value": {
               "Fn::Join": [ "-", [ "instance-security-group", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "BastionSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable ssh access to the bastion host",
+        "VpcId" : { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } },
+        "SecurityGroupIngress" : [
+          { "IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : "0.0.0.0/0"}
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [ "-", [ "bastion-host-in-public-subnet-security-group", { "Ref": "AWS::StackId" } ] ]
             }
           }
         ]
@@ -102,13 +102,38 @@
           { "IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "SourceSecurityGroupId": { "Ref": "PublicSubnetSecurityGroup" } },
           { "IpProtocol": "tcp", "FromPort": "3306", "ToPort": "3306", "SourceSecurityGroupId": { "Ref": "PublicSubnetSecurityGroup" } },
           { "IpProtocol": "tcp", "FromPort": "5432", "ToPort": "5432", "SourceSecurityGroupId": { "Ref": "PrivateSubnetSecurityGroup" } },
-          { "IpProtocol": "tcp", "FromPort": "3306", "ToPort": "3306", "SourceSecurityGroupId": { "Ref": "PrivateSubnetSecurityGroup" } },
+          { "IpProtocol": "tcp", "FromPort": "3306", "ToPort": "3306", "SourceSecurityGroupId": { "Ref": "PrivateSubnetSecurityGroup" } }
         ],
         "Tags": [
           {
             "Key": "Name",
             "Value": {
               "Fn::Join": [ "-", [ "private-subnet-db-security-group", { "Ref": "AWS::StackId" } ] ]
+            }
+          }
+        ]
+      }
+    },
+
+    "NATSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Allow inbound traffic to the NAT instance from private subnet and forward it to the internet. Also allow debugging by logging in through bastion",
+        "VpcId" : { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } },
+        "SecurityGroupIngress": [
+          {"IpProtocol": "-1", "SourceSecurityGroupId": {"Ref": "PrivateSubnetSecurityGroup"}},
+          {"IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "SourceSecurityGroupId": { "Ref": "BastionSecurityGroup"}}
+        ],
+        "SecurityGroupEgress": [
+          {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
+          {"IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "CidrIp": "0.0.0.0/0"},
+          {"IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "DestinationSecurityGroupId": { "Ref": "BastionSecurityGroup"}}
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": ["-", ["NAT-instance-security-group", {"Ref": "AWS::StackId"}]]
             }
           }
         ]
@@ -192,6 +217,22 @@
             [
               { "Ref" : "AWS::StackName" },
               "PrivateSubnetDbSecurityGroupId",
+            ]
+          ]
+        }
+      }
+    },
+
+    "NATSecurityGroupId": {
+      "Description": "The security group id of NAT instances in public subnets",
+      "Value": {"Fn::GetAtt": ["NATSecurityGroup", "GroupId"]},
+      "Export": {
+        "Name": {
+          "Fn::Join" : [
+            "-",
+            [
+              { "Ref" : "AWS::StackName" },
+              "NATSecurityGroupId",
             ]
           ]
         }
