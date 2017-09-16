@@ -137,7 +137,8 @@
                 "libbz2-dev": [],
                 "libsqlite3-dev": [],
                 "build-essential": [],
-                "ruby": []
+                "ruby": [],
+                "apache2": []
               },
               "python": {
                 "awscli": []
@@ -221,6 +222,22 @@
                 },
                 "cwd": "/usr/local/bin",
                 "ignoreErrors": "false"
+              },
+
+              "1_ready_health_check_for_node": {
+                "command": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "echo '<html><body>",
+                      {"Ref": "AWS::StackName"},
+                      " - ",
+                      {"Ref": "Name"},
+                      "</body></html>' ",
+                      "> /var/www/html/index.html"
+                    ]
+                  ]
+                }
               }
             }
           },
@@ -238,6 +255,11 @@
                 },
 
                 "docker": {
+                  "enabled": "true",
+                  "ensureRunning": "true"
+                },
+
+                "httpd": {
                   "enabled": "true",
                   "ensureRunning": "true"
                 }
