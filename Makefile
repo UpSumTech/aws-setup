@@ -99,11 +99,11 @@ test_iam: deps $(IAM_CF_FILES) $(IAM_VAR_FILES) $(IAM_TASK_FILES)
 	$(AT)./bin/run.py iam --region=us-west-2 --first-password=noop --key-name=noop --dry-run
 
 build_iam: test_iam $(IAM_CF_FILES) $(IAM_VAR_FILES) $(IAM_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=$(FIRST_PASSWORD) --key-name=$(KEY_NAME)
 
 teardown_iam: test_iam $(IAM_CF_FILES) $(IAM_VAR_FILES) $(IAM_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=noop --key-name=noop --delete
 
 test_vpc: deps $(VPC_CF_FILES) $(VPC_VAR_FILES) $(VPC_TASK_FILES)
@@ -111,11 +111,11 @@ test_vpc: deps $(VPC_CF_FILES) $(VPC_VAR_FILES) $(VPC_TASK_FILES)
 	$(AT)./bin/run.py vpc --region=us-west-2 --dry-run
 
 build_vpc: test_vpc $(VPC_CF_FILES) $(VPC_VAR_FILES) $(VPC_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py vpc --region=$(AWS_REGION)
 
 teardown_vpc: test_vpc $(VPC_CF_FILES) $(VPC_VAR_FILES) $(VPC_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py vpc --region=$(AWS_REGION) --delete
 
 test_sg: deps $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES)
@@ -123,11 +123,11 @@ test_sg: deps $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES)
 	$(AT)./bin/run.py sg --region=us-west-2 --dry-run
 
 build_sg: test_sg $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py sg --region=$(AWS_REGION)
 
 teardown_sg: test_sg $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py sg --region=$(AWS_REGION) --delete
 
 test_nat: deps $(NAT_CF_FILES) $(NAT_VAR_FILES) $(NAT_TASK_FILES)
@@ -135,11 +135,11 @@ test_nat: deps $(NAT_CF_FILES) $(NAT_VAR_FILES) $(NAT_TASK_FILES)
 	$(AT)./bin/run.py nat --region=us-west-2 --key-name=noop --dry-run
 
 build_nat: test_nat $(NAT_CF_FILES) $(NAT_VAR_FILES) $(NAT_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py nat --region=$(AWS_REGION) --key-name=$(KEY_NAME)
 
 teardown_nat: test_nat $(NAT_CF_FILES) $(NAT_VAR_FILES) $(NAT_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py nat --region=$(AWS_REGION) --key-name=$(KEY_NAME) --delete
 
 test_kms: deps $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES)
@@ -147,11 +147,11 @@ test_kms: deps $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES)
 	$(AT)./bin/run.py kms --region=us-west-2 --dry-run
 
 build_kms: test_kms $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py kms --region=$(AWS_REGION)
 
 teardown_kms: test_kms $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py kms --region=$(AWS_REGION) --delete
 
 test_bastion: deps $(BASTION_CF_FILES) $(BASTION_VAR_FILES) $(BASTION_TASK_FILES)
@@ -159,11 +159,11 @@ test_bastion: deps $(BASTION_CF_FILES) $(BASTION_VAR_FILES) $(BASTION_TASK_FILES
 	$(AT)./bin/run.py bastion --region=us-west-2 --key-name=noop --dry-run
 
 build_bastion: test_bastion $(BASTION_CF_FILES) $(BASTION_VAR_FILES) $(BASTION_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py bastion --region=$(AWS_REGION) --key-name=$(KEY_NAME)
 
 teardown_bastion: test_bastion $(BASTION_CF_FILES) $(BASTION_VAR_FILES) $(BASTION_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py bastion --region=$(AWS_REGION) --key-name=noop --delete
 
 test_rds: deps $(RDS_CF_FILES) $(RDS_VAR_FILES) $(RDS_TASK_FILES)
@@ -171,11 +171,11 @@ test_rds: deps $(RDS_CF_FILES) $(RDS_VAR_FILES) $(RDS_TASK_FILES)
 	$(AT)./bin/run.py rds --db-name='foo' --db-user='bar' --db-password='blah' --db-engine='mysql' --region=us-west-2 --dry-run
 
 build_rds: test_rds $(RDS_CF_FILES) $(RDS_VAR_FILES) $(RDS_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py rds --db-name=$(DB_NAME) --db-user=$(DB_USER) --db-password=$(DB_PASSWORD) --db-engine=$(DB_ENGINE) --region=$(AWS_REGION)
 
 teardown_rds: test_rds $(RDS_CF_FILES) $(RDS_VAR_FILES) $(RDS_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py rds --db-name=$(DB_NAME) --db-user=$(DB_USER) --db-password=$(DB_PASSWORD) --db-engine=$(DB_ENGINE) --region=$(AWS_REGION) --delete
 
 test_ec2: deps $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES)
@@ -183,11 +183,11 @@ test_ec2: deps $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES)
 	$(AT)./bin/run.py ec2 --region=us-west-2 --key-name=noop --dry-run
 
 build_ec2: test_ec2 $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py ec2 --region=$(AWS_REGION) --key-name=$(KEY_NAME)
 
 teardown_ec2: test_ec2 $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py ec2 --region=$(AWS_REGION) --key-name=noop --delete
 
 test_elb: deps $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES)
@@ -195,11 +195,11 @@ test_elb: deps $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES)
 	$(AT)./bin/run.py elb --region=us-west-2 --dry-run
 
 build_elb: test_elb $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py elb --region=$(AWS_REGION)
 
 teardown_elb: test_elb $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py elb --region=$(AWS_REGION) --delete
 
 test_route53: deps $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES)
@@ -207,11 +207,11 @@ test_route53: deps $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES
 	$(AT)./bin/run.py route53 --region=us-west-2 --dry-run
 
 build_route53: test_route53 $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES) ansible/build.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py route53 --region=$(AWS_REGION)
 
 teardown_route53: test_route53 $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES) ansible/teardown.yml
-	$(AT)[[ ! -z "$(AWS_REGION)" ]] || exit 1
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py route53 --region=$(AWS_REGION) --delete
 
 clean:
