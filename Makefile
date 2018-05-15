@@ -239,6 +239,6 @@ help :
 
 $(DEPS_STATEFILE) : .env requirements.txt
 	mkdir -p .make
-	$(AT)[[ ! -z "$$VIRTUAL_ENV" ]] || exit 1
+	$(AT)test ! -z "$$VIRTUAL_ENV" || exit 1
 	pip install -r requirements.txt
 	touch $(DEPS_STATEFILE)
