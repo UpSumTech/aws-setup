@@ -116,3 +116,19 @@ Also a separate group for each of the service cluster mentioned above with super
   - Make sure the playbooks run
   - Make sure you can build and teardown
   - Make sure if you keep updating the readme
+
+### For using the bastion and the NAT instances
+    ```shell
+    eval `ssh-agent -s` # Start the ssh agent on your local machine
+    ssh-add -k $HOME/.ssh/aws/id_rsa # To add the ssh private key to agent forwarding
+    ssh-add -L # To view the added ssh key to the forwarding agent
+    ssh -A ec2-user@<bastion-host-public-dns> # Connect to bastion with agent forwarding
+    ssh -A ec2-user@<NAT-instance-private-dns> # Connect to the NAT box from within the bastion box
+    cat /var/log/cloud-init-output.log # To see the logs of the bootstrap process on the NAT box
+    cat /var/log/cloud-init.log # To see the init logs of the ec2 box
+    cat /var/lib/cloud/data/status.json # To view the current status of the ec2 box
+    cat /var/lib/cloud/data/result.json # To view the result of the init process
+    curl http://169.254.169.254/latest/
+    curl http://169.254.169.254/latest/dynamic/instance-identity/document # This gives the instance identity data
+    curl http://169.254.169.254/latest/meta-data/ # This gives the meta-data of the instance
+    ```

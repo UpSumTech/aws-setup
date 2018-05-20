@@ -223,14 +223,20 @@ help :
 	echo make build_iam
 	echo make teardown_iam
 	echo make test_vpc
-	echo make build_vpc AWS_REGION=us-west-1
-	echo make teardown_vpc AWS_REGION=us-west-1
+	echo make build_vpc AWS_REGION=us-west-2
+	echo make teardown_vpc AWS_REGION=us-west-2
 	echo make test_sg
-	echo make build_sg AWS_REGION=us-west-1
-	echo make teardown_sg AWS_REGION=us-west-1
+	echo make build_sg AWS_REGION=us-west-2
+	echo make teardown_sg AWS_REGION=us-west-2
 	echo make test_ec2
-	echo make build_ec2 AWS_REGION=us-west-1 KEY_NAME=bastion-key
-	echo make teardown_ec2 AWS_REGION=us-west-1 KEY_NAME=bastion-key
+	echo make build_ec2 AWS_REGION=us-west-2 KEY_NAME=bastion-key
+	echo make teardown_ec2 AWS_REGION=us-west-2 KEY_NAME=bastion-key
+	echo make test_bastion
+	echo make build_bastion AWS_REGION=us-west-2 KEY_NAME=bastion-key
+	echo make teardown_bastion AWS_REGION=us-west-1 KEY_NAME=bastion-key
+	echo make test_rds
+	echo make build_rds AWS_REGION=us-west-2 DB_USER=root DB_PASSWORD=welcome2mysql DB_NAME=sample_webapp DB_ENGINE=mysql
+	echo make teardown_rds AWS_REGION=us-west-2 DB_USER=root DB_PASSWORD=welcome2mysql DB_NAME=sample_webapp DB_ENGINE=mysql
 	echo make clean
 	echo make help
 
