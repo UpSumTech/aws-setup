@@ -16,7 +16,7 @@ err() {
 ################### Helper functions ####################
 #########################################################
 setup_pyenv() {
-  if [[ ! -d $HOME/.pyenv && cat $HOME/.bashrc | grep -i 'pyenv' ]]; then
+  if test ! -d $HOME/.pyenv && cat $HOME/.bashrc | grep -i 'pyenv'; then
     git clone https://github.com/pyenv/pyenv.git $HOME/.pyenv
     echo 'export PYENV_ROOT="$HOME/.pyenv"' >> $HOME/.bashrc
     echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> $HOME/.bashrc
