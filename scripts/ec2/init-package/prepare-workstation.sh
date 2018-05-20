@@ -26,10 +26,6 @@ setup_pyenv() {
   . ~/.bashrc
 }
 
-upgrade_pip_packages() {
-  pip install -U botocore
-}
-
 setup_ssh_keys_and_tokens() {
   if [[ ! -f ~/.ssh/id_rsa && ! -f ~/.ssh/id_rsa.pub ]]; then
     ssh-keygen -t rsa -N "" -b 4096 -C "ssh private key" -f ~/.ssh/id_rsa
@@ -49,7 +45,7 @@ setup_workstation() {
   cd ~
   [[ -d ~/workstation ]] && rm -rf ~/workstation
   git clone https://github.com/sumanmukherjee03/workstation.git ~/workstation
-  cd workstation
+  cd workstation<(echo 'y')
   make build HOST_IP=localhost DRY_RUN=off
   popd
 }
@@ -61,7 +57,6 @@ setup_autoenv() {
 
 main() {
   setup_pyenv
-  upgrade_pip_packages
   setup_ssh_keys_and_tokens
   setup_workstation
   setup_autoenv # Install as root for now and then worry about autoenv. It creates problems.

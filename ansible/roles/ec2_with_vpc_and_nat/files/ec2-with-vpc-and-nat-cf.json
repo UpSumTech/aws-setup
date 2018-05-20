@@ -141,7 +141,7 @@
                 "apache2": []
               },
               "python": {
-                "awscli": []
+                "awscli": ["1.11.0"]
               }
             }
           },
