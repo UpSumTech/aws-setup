@@ -1,5 +1,6 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+
+set -ex
 
 #########################################################
 ################### Helper functions ####################
@@ -51,16 +52,10 @@ setup_workstation() {
   popd
 }
 
-setup_autoenv() {
-  pip install autoenv
-  echo "source `which activate.sh`" >> ~/.bashrc
-}
-
 main() {
   setup_pyenv
   setup_ssh_keys_and_tokens
   setup_workstation
-  setup_autoenv # Install as root for now and then worry about autoenv. It creates problems.
 }
 
 [[ "$BASH_SOURCE" == "$0" ]] && main "$@"
