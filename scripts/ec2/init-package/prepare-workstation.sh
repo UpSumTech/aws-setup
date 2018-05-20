@@ -45,7 +45,8 @@ setup_workstation() {
   cd ~
   [[ -d ~/workstation ]] && rm -rf ~/workstation
   git clone https://github.com/sumanmukherjee03/workstation.git ~/workstation
-  cd workstation<(echo 'y')
+  cd workstation
+  . .env
   make build HOST_IP=localhost DRY_RUN=off
   popd
 }
