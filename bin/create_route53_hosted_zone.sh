@@ -7,7 +7,6 @@ set -e
 #########################################################
 ################# Variable declaration ##################
 #########################################################
-AWS_REGION=
 DOMAIN_NAME=
 SUBDOMAIN_NAME=
 THIS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -69,7 +68,7 @@ create_subdomain_hosted_zone() {
   aws route53 create-hosted-zone --name "$SUBDOMAIN_NAME" --caller-reference "$uuid" | jq -r ".DelegationSet.NameServers | .[]" > "$PROJECT_TMPDIR/ns_servers"
   # Add the subdomain NS record to the parent hosted zone
   chdir_and_exec create_subdomain_ns_file "$PROJECT_TMPDIR/ns_servers"
-  aws route53 change-resource-record-sets --region "$AWS_REGION" --hosted-zone-id "$parent_zone_id" --change-batch "file://$PROJECT_TMPDIR/subdomain_ns.json"
+  aws route53 change-resource-record-sets --hosted-zone-id "$parent_zone_id" --change-batch "file://$PROJECT_TMPDIR/subdomain_ns.json"
 }
 
 verify() {
@@ -78,9 +77,8 @@ verify() {
 }
 
 main() {
-  AWS_REGION="$1"
-  DOMAIN_NAME="$2"
-  SUBDOMAIN_NAME="$3"
+  DOMAIN_NAME="$1"
+  SUBDOMAIN_NAME="$2"
   validate
   create_subdomain_hosted_zone
   verify
