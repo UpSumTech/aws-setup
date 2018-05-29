@@ -16,7 +16,8 @@ err() {
 ################### Helper functions ####################
 #########################################################
 setup_pyenv() {
-  if test ! -d $HOME/.pyenv && cat $HOME/.bashrc | grep -i 'pyenv'; then
+  echo '' > $HOME/.bashrc
+  if test ! -d $HOME/.pyenv && ! cat $HOME/.bashrc | grep -i 'pyenv'; then
     git clone https://github.com/pyenv/pyenv.git $HOME/.pyenv
     echo 'export PYENV_ROOT="$HOME/.pyenv"' >> $HOME/.bashrc
     echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> $HOME/.bashrc
@@ -29,10 +30,14 @@ setup_pyenv() {
 }
 
 setup_ssh_keys_and_tokens() {
-  if [[ ! -f $HOME/.ssh/id_rsa && ! -f $HOME/.ssh/id_rsa.pub && ! -f $HOME/.ssh/authorized_keys ]]; then
+  if test ! -d $HOME/.ssh; then
+    mkdir -p $HOME/.ssh
+    chmod 700 $HOME/.ssh
+  fi
+  if test ! -f $HOME/.ssh/id_rsa && ! -f $HOME/.ssh/id_rsa.pub && ! -f $HOME/.ssh/authorized_keys; then
     ssh-keygen -t rsa -N "" -b 4096 -C "ssh private key" -f $HOME/.ssh/id_rsa
     chmod 600 $HOME/.ssh/id_rsa
-    chmod 600 $HOME/.ssh/id_rsa.pub
+    chmod 644 $HOME/.ssh/id_rsa.pub
     touch $HOME/.ssh/authorized_keys
     cat $HOME/.ssh/id_rsa.pub >> $HOME/.ssh/authorized_keys
     chmod 600 $HOME/.ssh/authorized_keys
@@ -44,10 +49,9 @@ setup_ssh_keys_and_tokens() {
 setup_workstation() {
   pushd .
   . $HOME/.bashrc
-  cd $HOME
-  [[ -d $HOME/workstation ]] && rm -rf $HOME/workstation
+  test -d $HOME/workstation && rm -rf $HOME/workstation
   git clone https://github.com/sumanmukherjee03/workstation.git $HOME/workstation
-  cd workstation
+  cd $HOME/workstation
   . .env
   make build HOST_IP=localhost DRY_RUN=off
   popd

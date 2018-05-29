@@ -221,7 +221,8 @@
                   ]
                 },
                 "cwd": "/usr/local/bin",
-                "ignoreErrors": "false"
+                "ignoreErrors": "false",
+                "env": {"HOME": "/root"}
               },
 
               "1_ready_health_check_for_node": {
@@ -279,9 +280,8 @@
                 "set -o pipefail\n",
                 "apt-get update\n",
                 "apt-get -y install python-pip\n",
-                "pip install --upgrade pip\n",
                 "pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
-                "pip install awscli\n",
+                "pip install awscli==1.11.0\n",
                 "cp /usr/local/init/ubuntu/cfn-hup /etc/init.d/cfn-hup \n",
                 "chmod +x /etc/init.d/cfn-hup \n",
                 "update-rc.d cfn-hup defaults \n ",

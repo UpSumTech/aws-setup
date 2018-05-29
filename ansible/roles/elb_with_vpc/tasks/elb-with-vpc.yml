@@ -20,6 +20,7 @@
       VpcStackName: "vpc-{{ region }}-stack"
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
       StackNamesForEC2Instances: "{{ instances | join(',') }}"
+      SSLCertArn: "arn:aws:acm:us-west-2:043587310308:certificate/d9233d64-edbd-483f-aa8b-4fbcb7d2d212"
   when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"

@@ -106,6 +106,18 @@ teardown_iam: test_iam $(IAM_CF_FILES) $(IAM_VAR_FILES) $(IAM_TASK_FILES) ansibl
 	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py iam --region=$(AWS_REGION) --first-password=noop --key-name=noop --delete
 
+test_kms: deps $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES)
+	$(AT)echo $(KMS_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
+	$(AT)./bin/run.py kms --region=us-west-2 --dry-run
+
+build_kms: test_kms $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES) ansible/build.yml
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
+	$(AT)./bin/run.py kms --region=$(AWS_REGION)
+
+teardown_kms: test_kms $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES) ansible/teardown.yml
+	$(AT)test ! -z "$(AWS_REGION)" || exit 1
+	$(AT)./bin/run.py kms --region=$(AWS_REGION) --delete
+
 test_vpc: deps $(VPC_CF_FILES) $(VPC_VAR_FILES) $(VPC_TASK_FILES)
 	$(AT)echo $(VPC_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
 	$(AT)./bin/run.py vpc --region=us-west-2 --dry-run
@@ -129,18 +141,6 @@ build_sg: test_sg $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/build.
 teardown_sg: test_sg $(SG_CF_FILES) $(SG_VAR_FILES) $(SG_TASK_FILES) ansible/teardown.yml
 	$(AT)test ! -z "$(AWS_REGION)" || exit 1
 	$(AT)./bin/run.py sg --region=$(AWS_REGION) --delete
-
-test_kms: deps $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES)
-	$(AT)echo $(KMS_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
-	$(AT)./bin/run.py kms --region=us-west-2 --dry-run
-
-build_kms: test_kms $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES) ansible/build.yml
-	$(AT)test ! -z "$(AWS_REGION)" || exit 1
-	$(AT)./bin/run.py kms --region=$(AWS_REGION)
-
-teardown_kms: test_kms $(KMS_CF_FILES) $(KMS_VAR_FILES) $(KMS_TASK_FILES) ansible/teardown.yml
-	$(AT)test ! -z "$(AWS_REGION)" || exit 1
-	$(AT)./bin/run.py kms --region=$(AWS_REGION) --delete
 
 test_nat: deps $(NAT_CF_FILES) $(NAT_VAR_FILES) $(NAT_TASK_FILES)
 	$(AT)echo $(NAT_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .

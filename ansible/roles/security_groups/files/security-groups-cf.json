@@ -18,7 +18,12 @@
         "GroupDescription": "Allow all kind of traffic to the load balancer",
         "VpcId" : { "Fn::ImportValue": { "Fn::Sub": "${VpcStackName}-VpcId" } },
         "SecurityGroupIngress": [
-          { "IpProtocol": "-1", "CidrIp": "0.0.0.0/0" }
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
+          { "IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "CidrIp": "0.0.0.0/0"}
+        ],
+        "SecurityGroupEgress": [
+          {"IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
+          {"IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "CidrIp": "0.0.0.0/0"}
         ],
         "Tags": [
           {
@@ -59,7 +64,8 @@
           { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "CidrIp": "0.0.0.0/0"},
           { "IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "CidrIp": "0.0.0.0/0"},
           { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "SourceSecurityGroupId": { "Ref": "BastionSecurityGroup" } },
-          { "IpProtocol": "tcp", "FromPort": "1", "ToPort": "65535", "SourceSecurityGroupId": { "Ref": "LoadBalancerSecurityGroup" } }
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "SourceSecurityGroupId": { "Ref": "LoadBalancerSecurityGroup" } },
+          { "IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "SourceSecurityGroupId": { "Ref": "LoadBalancerSecurityGroup" } }
         ],
         "Tags": [
           {
@@ -79,7 +85,8 @@
         "GroupDescription": "Allow load balancer, bastion host  and instances from the public subnet to talk to instances in the private subnets",
         "SecurityGroupIngress": [
           { "IpProtocol": "tcp", "FromPort": "22", "ToPort": "22", "SourceSecurityGroupId": { "Ref": "BastionSecurityGroup" } },
-          { "IpProtocol": "tcp", "FromPort": "1", "ToPort": "65535", "SourceSecurityGroupId": { "Ref": "LoadBalancerSecurityGroup" } },
+          { "IpProtocol": "tcp", "FromPort": "80", "ToPort": "80", "SourceSecurityGroupId": { "Ref": "LoadBalancerSecurityGroup" } },
+          { "IpProtocol": "tcp", "FromPort": "443", "ToPort": "443", "SourceSecurityGroupId": { "Ref": "LoadBalancerSecurityGroup" } },
           { "IpProtocol": "tcp", "FromPort": "1", "ToPort": "65535", "SourceSecurityGroupId": { "Ref": "PublicSubnetSecurityGroup" } }
         ],
         "Tags": [
@@ -152,7 +159,7 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "BastionSecurityGroupId",
+              "BastionSecurityGroupId"
             ]
           ]
         }
@@ -168,7 +175,7 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "LoadBalancerSecurityGroupId",
+              "LoadBalancerSecurityGroupId"
             ]
           ]
         }
@@ -184,7 +191,7 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "PublicSubnetSecurityGroupId",
+              "PublicSubnetSecurityGroupId"
             ]
           ]
         }
@@ -200,7 +207,7 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "PrivateSubnetSecurityGroupId",
+              "PrivateSubnetSecurityGroupId"
             ]
           ]
         }
@@ -216,7 +223,7 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "PrivateSubnetDbSecurityGroupId",
+              "PrivateSubnetDbSecurityGroupId"
             ]
           ]
         }
@@ -232,7 +239,7 @@
             "-",
             [
               { "Ref" : "AWS::StackName" },
-              "NATSecurityGroupId",
+              "NATSecurityGroupId"
             ]
           ]
         }

@@ -1,7 +1,7 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Creates elb inside a VPC",
+  "Description": "Creates elb inside a VPC's public subnet with SSL",
 
   "Parameters": {
     "VpcStackName": {
@@ -20,6 +20,12 @@
       "Description": "The ec2 instance stack names",
       "Type": "List<String>",
       "ConstraintDescription": "This must be existing stack names for ec2 instances"
+    },
+
+    "SSLCertArn": {
+      "Description": "The arn of the SSL certificate to use for HTTPS",
+      "Type": "String",
+      "ConstraintDescription": "This must be an existing arn for ssl cert"
     }
   },
 
@@ -39,6 +45,7 @@
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
       "Properties": {
         "LoadBalancerName": {"Fn::Join": ["-", ["elb", "webapp", { "Ref": "AWS::Region" } ]]},
+
         "Instances": [
           {
             "Fn::ImportValue": {
@@ -104,9 +111,19 @@
 
         "Listeners": [
           {
+            "Protocol": "HTTP",
             "LoadBalancerPort": "80",
+            "InstanceProtocol": "HTTP",
+            "InstancePort": "80"
+          },
+
+          {
+            "Protocol": "HTTPS",
+            "LoadBalancerPort": "443",
+            "InstanceProtocol": "HTTP",
             "InstancePort": "80",
-            "Protocol": "HTTP"
+            "SSLCertificateId": {"Ref": "SSLCertArn"},
+            "PolicyNames": ["VMSSLPolicy"]
           }
         ],
 
@@ -114,9 +131,33 @@
           "Target": { "Fn::Join": [ "", ["HTTP:80", "/"]]},
           "HealthyThreshold": "5",
           "UnhealthyThreshold": "3",
-          "Interval": "30",
+          "Interval": "15",
           "Timeout": "5"
-        }
+        },
+
+        "Scheme": "internet-facing",
+
+        "ConnectionSettings": {
+          "IdleTimeout": 120
+        },
+
+        "ConnectionDrainingPolicy": {
+          "Enabled": true,
+          "Timeout": 90
+        },
+
+        "Policies": [
+          {
+            "PolicyName": "VMSSLPolicy",
+            "PolicyType": "SSLNegotiationPolicyType",
+            "Attributes": [
+              {
+                "Name": "Reference-Security-Policy",
+                "Value": "ELBSecurityPolicy-2016-08"
+              }
+            ]
+          }
+        ]
       }
     }
   },
