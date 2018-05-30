@@ -3,6 +3,12 @@
 set -ex
 
 #########################################################
+###################### Variables ########################
+#########################################################
+
+PROVISION_LOG_FILE=/var/log/provision.log
+
+#########################################################
 ################### Helper functions ####################
 #########################################################
 export PID="$$" # Get parent pid so that you can kill the main proc from subshells
@@ -53,7 +59,8 @@ setup_workstation() {
   git clone https://github.com/sumanmukherjee03/workstation.git $HOME/workstation
   cd $HOME/workstation
   . .env
-  make build HOST_IP=localhost DRY_RUN=off
+  touch $PROVISION_LOG_FILE
+  make build HOST_IP=localhost DRY_RUN=off >> $PROVISION_LOG_FILE
   popd
 }
 
