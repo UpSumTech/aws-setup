@@ -7,6 +7,7 @@ ok() {
 }
 
 log_user_and_group() {
+  echo;echo;echo ">>>>>>>>>>>>>>> USER AND GROUP INFO <<<<<<<<<<<<<"
   echo "User id : $(id -u)"
   echo "Group id : $(id -g)"
   echo "User name : $(id -un)"
@@ -15,11 +16,13 @@ log_user_and_group() {
 }
 
 log_env_vars() {
+  echo;echo;echo ">>>>>>>>>>>>>>> ENV VAR INFO <<<<<<<<<<<<<"
   printenv
   ok
 }
 
 log_current_dir_content() {
+  echo;echo;echo ">>>>>>>>>>>>>>> CWD INFO <<<<<<<<<<<<<"
   echo "Current Dir : $(pwd)"
   ls -lah
   ok
@@ -34,23 +37,27 @@ is_current_user_root() {
 }
 
 log_disk_usage() {
+  echo;echo;echo ">>>>>>>>>>>>>>> DISK USAGE INFO <<<<<<<<<<<<<"
   df -kh | grep -i -v 'filesystem' | awk '{print $1 ":" $5}'
   ok
 }
 
 log_os_info() {
+  echo;echo;echo ">>>>>>>>>>>>>>> OS INFO <<<<<<<<<<<<<"
   cat /etc/*-release
   uname -a
   ok
 }
 
 log_selinux_info() {
+  echo;echo;echo ">>>>>>>>>>>>>>> SELINUX INFO <<<<<<<<<<<<<"
   command -v getenforce >/dev/null 2>&1 \
     && getenforce
   ok
 }
 
 log_ip_tables_info() {
+  echo;echo;echo ">>>>>>>>>>>>>>> SELINUX INFO <<<<<<<<<<<<<"
   command -v iptables >/dev/null 2>&1 \
     && iptables -nvL \
     && iptables -nvL -t filter \
@@ -59,6 +66,7 @@ log_ip_tables_info() {
 }
 
 log_installed_packages() {
+  echo;echo;echo ">>>>>>>>>>>>>>> PACKAGE INFO <<<<<<<<<<<<<"
   command -v rpm >/dev/null 2>&1 && rpm -qa
   command -v dpkg >/dev/null 2>&1 && dpkg --list
   ok
