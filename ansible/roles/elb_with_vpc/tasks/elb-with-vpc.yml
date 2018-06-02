@@ -28,7 +28,7 @@
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
       StackNamesForEC2Instances: "{{ instances | join(',') }}"
       SSLCertArn: certificate_arn_present.stdout
-  when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success and certificate_arn_present|success)
+  when: (stack_status == 'present' and certificate_arn_present|success) or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
   cloudformation_facts:

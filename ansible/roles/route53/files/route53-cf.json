@@ -4,42 +4,73 @@
   "Description": "Creates route53 hosted zone and records",
 
   "Parameters": {
-    "DomainName": {
-      "Description": "The domain name",
+    "RootDomain": {
+      "Description": "The root domain",
       "Type": "String"
     },
 
-    "ELBStackName": {
+    "SubDomainName": {
+      "Description": "The sub domain name",
+      "Type": "String"
+    },
+
+    "RootDomainHostedZoneId": {
+      "Description": "The hosted zone id of the root domain",
+      "Type": "String",
+      "ConstraintDescription": "This must be the hosted zone id of an existing root domain"
+    },
+
+    "ElbStackName": {
       "Description": "The name of the ELB stack",
       "Type": "String",
       "ConstraintDescription": "This must be existing stack names for elb"
+    },
+
+    "ElbHostedZoneIdImportName": {
+      "Description": "The name of the ELB hosted zone id output",
+      "Type": "String",
+      "ConstraintDescription": "This must be existing output from the elb stack"
+    },
+
+    "ElbDnsImportName": {
+      "Description": "The name of the ELB Dns stack output",
+      "Type": "String",
+      "ConstraintDescription": "This must be existing output from the elb stack"
     }
   },
 
   "Resources": {
-    "DomainHostedZone": {
-      "Type": "AWS::Route53::HostedZone",
-      "Properties": {
-        "Name": {"Ref": "DomainName"},
-        "HostedZoneConfig": {"Comment": "Hosted domain for site"}
-      }
-    },
-
     "DomainRecordGroups": {
       "Type": "AWS::Route53::RecordSetGroup",
       "Properties": {
         "Comment": "Record groups for hosted domain",
-        "HostedZoneId": {"Ref": "DomainHostedZone"},
+        "HostedZoneId": {"Ref": "RootDomainHostedZoneId"},
         "RecordSets": [
           {
-            "Name": {"Fn::Join": [".", ["demo", {"Ref": "DomainName"}]]},
+            "Name": {"Fn::Join": [".", [{"Ref": "SubDomainName"}, {"Ref": "RootDomain"}]]},
             "Type": "A",
             "AliasTarget": {
               "HostedZoneId": {
-                "Fn::ImportValue": "elb-with-vpc-us-west-2-stack-ElasticLoadBalancerHostedZoneID"
+                "Fn::ImportValue": {
+                  "Fn::Sub": [
+                    "${ElbStackName}-${ElbHostedZoneIdImportName}",
+                    {
+                      "ElbStackName": {"Ref": "ElbStackName"},
+                      "ElbHostedZoneIdImportName": {"Ref": "ElbHostedZoneIdImportName"}
+                    }
+                  ]
+                }
               },
               "DNSName": {
-                "Fn::ImportValue": "elb-with-vpc-us-west-2-stack-ElasticLoadBalancerDNS"
+                "Fn::ImportValue": {
+                  "Fn::Sub": [
+                    "${ElbStackName}-${ElbDnsImportName}",
+                    {
+                      "ElbStackName": {"Ref": "ElbStackName"},
+                      "ElbDnsImportName": {"Ref": "ElbDnsImportName"}
+                    }
+                  ]
+                }
               }
             }
           }

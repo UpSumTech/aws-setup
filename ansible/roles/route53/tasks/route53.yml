@@ -10,6 +10,13 @@
   register: is_stack_present
   ignore_errors: yes
 
+- name: root_domain_hosted_zone
+  shell: aws route53 list-hosted-zones | jq -r ".HostedZones[] | select(.Name==\"{{ root_domain }}.\") | .Id"
+  args:
+    executable: /bin/bash
+  register: root_domain_id
+  ignore_errors: yes
+
 - name: "{{ stack_name }}"
   cloudformation:
     stack_name: "{{ stack_name }}"
@@ -17,9 +24,13 @@
     state: "{{ stack_status }}"
     template: "roles/route53/files/route53-cf.json"
     template_parameters:
-      DomainName: "sumanmukherjee.tech"
-      ELBStackName: "elb-with-vpc-{{ region }}-stack"
-  when: (stack_status == 'present') or (stack_status == 'absent' and is_stack_present|success)
+      RootDomain: "{{ root_domain }}"
+      RootDomainHostedZoneId: "{{ root_domain_id.stdout }}"
+      SubDomainName: "{{ sub_domain_name }}"
+      ElbStackName: "elb-with-vpc-{{ region }}-stack"
+      ElbHostedZoneIdImportName: "ElasticLoadBalancerHostedZoneID"
+      ElbDnsImportName: "ElasticLoadBalancerDNS"
+  when: (stack_status == 'present' and root_domain_id|success) or (stack_status == 'absent' and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
   cloudformation_facts:
