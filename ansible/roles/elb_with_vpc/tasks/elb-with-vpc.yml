@@ -11,7 +11,7 @@
   ignore_errors: yes
 
 - name: get_certificate_arn
-  shell: aws acm list-certificates | jq -r ".CertificateSummaryList | .[] | select(.DomainName==\"vms.sumanmukherjeetech.com\") | .CertificateArn"
+  shell: aws acm list-certificates | jq -r '.CertificateSummaryList | .[] | select(.DomainName=="{{ root_domain }}") | .CertificateArn'
   args:
     executable: /bin/bash
   register: certificate_arn_present
@@ -27,8 +27,8 @@
       VpcStackName: "vpc-{{ region }}-stack"
       SecurityGroupStackName: "security-groups-{{ region }}-stack"
       StackNamesForEC2Instances: "{{ instances | join(',') }}"
-      SSLCertArn: certificate_arn_present.stdout
-  when: (stack_status == 'present' and certificate_arn_present|success) or (stack_status == 'absent' and is_stack_present|success)
+      SSLCertArn: "{{ certificate_arn_present.stdout }}"
+  when: (stack_status == "present" and certificate_arn_present.stdout is defined) or (stack_status == "absent" and is_stack_present|success)
 
 - name: "collect-{{ stack_name }}"
   cloudformation_facts:

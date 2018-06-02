@@ -71,7 +71,8 @@
                     }
                   ]
                 }
-              }
+              },
+              "EvaluateTargetHealth": true,
             }
           }
         ]
@@ -80,16 +81,16 @@
   },
 
   "Outputs": {
-    "DomainHostedZoneId": {
-      "Description": "Domain hosted zone id",
-      "Value": {"Ref": "DomainHostedZone"},
+    "Route53RecordSetGroupName": {
+      "Description": "Route53 record set group name",
+      "Value": {"Ref": "DomainRecordGroups"},
       "Export": {
         "Name": {
           "Fn::Join": [
             "-",
             [
               { "Ref": "AWS::StackName" },
-              "DomainHostedZoneId"
+              "DomainRecordGroupName"
             ]
           ]
         }

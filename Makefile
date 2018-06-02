@@ -192,27 +192,27 @@ teardown_ec2: test_ec2 $(EC2_CF_FILES) $(EC2_VAR_FILES) $(EC2_TASK_FILES) ansibl
 
 test_elb: deps $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES)
 	$(AT)echo $(ELB_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
-	$(AT)./bin/run.py elb --region=us-west-2 --dry-run
+	$(AT)./bin/run.py elb --region=us-west-2 --root-domain=example.com --dry-run
 
 build_elb: test_elb $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES) ansible/build.yml
 	$(AT)test ! -z "$(AWS_REGION)" || exit 1
-	$(AT)./bin/run.py elb --region=$(AWS_REGION)
+	$(AT)./bin/run.py elb --region=$(AWS_REGION) --root-domain=$(ROOT_DOMAIN)
 
 teardown_elb: test_elb $(ELB_CF_FILES) $(ELB_VAR_FILES) $(ELB_TASK_FILES) ansible/teardown.yml
 	$(AT)test ! -z "$(AWS_REGION)" || exit 1
-	$(AT)./bin/run.py elb --region=$(AWS_REGION) --delete
+	$(AT)./bin/run.py elb --region=$(AWS_REGION) --root-domain=$(ROOT_DOMAIN) --delete
 
 test_route53: deps $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES)
 	$(AT)echo $(ROUTE53_CF_FILES) | xargs -n 1 -I {} aws cloudformation validate-template --template-body file:///$$(pwd)/{} | jq -r .
-	$(AT)./bin/run.py route53 --region=us-west-2 --domain=$(ROOT_DOMAIN) --subdomain=$(SUB_DOMAIN) --dry-run
+	$(AT)./bin/run.py route53 --region=us-west-2 --root-domain=$(ROOT_DOMAIN) --subdomain-name=$(SUB_DOMAIN_NAME) --dry-run
 
 build_route53: test_route53 $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES) ansible/build.yml
 	$(AT)test ! -z "$(AWS_REGION)" || exit 1
-	$(AT)./bin/run.py route53 --region=$(AWS_REGION) --domain=$(ROOT_DOMAIN) --subdomain=$(SUB_DOMAIN)
+	$(AT)./bin/run.py route53 --region=$(AWS_REGION) --root-domain=$(ROOT_DOMAIN) --subdomain-name=$(SUB_DOMAIN_NAME)
 
 teardown_route53: test_route53 $(ROUTE53_CF_FILES) $(ROUTE53_VAR_FILES) $(ROUTE53_TASK_FILES) ansible/teardown.yml
 	$(AT)test ! -z "$(AWS_REGION)" || exit 1
-	$(AT)./bin/run.py route53 --region=$(AWS_REGION) --domain=$(ROOT_DOMAIN) --subdomain=$(SUB_DOMAIN) --delete
+	$(AT)./bin/run.py route53 --region=$(AWS_REGION) --root-domain=$(ROOT_DOMAIN) --subdomain-name=$(SUB_DOMAIN_NAME) --delete
 
 clean:
 	$(AT)rm -rf .make

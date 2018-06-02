@@ -131,8 +131,8 @@ Usage:
     run.py bastion --key-name=<key_name> --region=<region> [--delete] [--dry-run]
     run.py rds --db-name=<db_name> --db-user=<db_user> --db-password=<db_password> --db-engine=<db_engine> --region=<region> [--delete] [--dry-run]
     run.py ec2 --key-name=<key_name> --region=<region> [--delete] [--dry-run]
-    run.py elb --region=<region> [--delete] [--dry-run]
-    run.py route53 --region=<region> [--delete] [--dry-run]
+    run.py elb --region=<region> --root-domain=<root_domain> [--delete] [--dry-run]
+    run.py route53 --region=<region> --root-domain=<root_domain> --subdomain-name=<subdomain_name> [--delete] [--dry-run]
     run.py (-h | --help)
 
 Options:
@@ -144,6 +144,8 @@ Options:
     --db-user=<db_user>                 The username of the database.
     --db-password=<db_password>         The password of the database.
     --db-engine=<db_engine>             The database engine. Valid values are mysql|postgres|mariadb.
+    --root-domain=<root_domain>         The root domain name for which you already have an ssl cert.
+    --subdomain-name=<subdomain_name>   The subdomain name that you will add with the root domain.
     --delete                            This option will delete the stacks.
     --dry-run                           This option will perform a dry run of the stacks.
 """
@@ -187,6 +189,13 @@ def main(args=None):
     elif args['ec2']:
         extra_vars['key_name'] = args['--key-name']
         _run_playbook('ec2', extra_vars=extra_vars, dry_run=dry_run)
+    elif args['elb']:
+        extra_vars['root_domain'] = args['--root-domain']
+        _run_playbook('elb', extra_vars=extra_vars, dry_run=dry_run)
+    elif args['route53']:
+        extra_vars['root_domain'] = args['--root-domain']
+        extra_vars['subdomain_name'] = args['--subdomain-name']
+        _run_playbook('route53', extra_vars=extra_vars, dry_run=dry_run)
     else:
         _run_playbook(sys.argv[1], extra_vars=extra_vars, dry_run=dry_run)
 
