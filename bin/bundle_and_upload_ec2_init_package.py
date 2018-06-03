@@ -20,7 +20,9 @@ files_to_upload = [
         "harden-os.sh",
         "prepare-workstation.sh",
         "get-os-info.sh",
-        "get-initd-scripts.sh"]
+        "get-initd-scripts.sh",
+        "templates/nginx.conf",
+        "prepare-nginx.sh"]
 
 #########################################################
 #################### Helper functions ###################

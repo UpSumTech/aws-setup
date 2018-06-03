@@ -15,6 +15,7 @@ INIT_FILES=( \
   "prepare-workstation.sh",
   "get-os-info.sh" \
   "get-initd-scripts.sh" \
+  "prepare-nginx.sh" \
 )
 S3_INIT_SCRIPTS_BUCKET=
 S3_INIT_PACKAGE_VERSION=
