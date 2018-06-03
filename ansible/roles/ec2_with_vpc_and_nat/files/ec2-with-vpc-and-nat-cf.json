@@ -258,11 +258,6 @@
                 "docker": {
                   "enabled": "true",
                   "ensureRunning": "true"
-                },
-
-                "httpd": {
-                  "enabled": "true",
-                  "ensureRunning": "true"
                 }
               }
             }
