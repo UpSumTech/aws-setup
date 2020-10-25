@@ -7,3 +7,6 @@ docker/.docker_login_mapping
 *.tmp
 .make/**
 .secrets/**
+**/.terraform/**/*
+terraform.tfstate
+terraform.tfstate.backup
