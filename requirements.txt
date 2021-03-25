@@ -2,6 +2,6 @@ docopts==0.6.1
 ansible==2.2.0.0
 boto==2.40.0
 boto3==1.4.0
-PyYAML==3.11
+PyYAML==5.4
 credstash==1.13.2
 awscli==1.11.0
